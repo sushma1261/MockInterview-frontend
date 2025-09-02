@@ -1,11 +1,13 @@
 "use client";
 
+import { authFetch } from "@/lib/api";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Question } from "./interface/question";
+import { getBaseUrl } from "./utils/utils";
 
-const baseUrl = "https://mockinterview-backend-b4ek.onrender.com";
+const baseUrl = getBaseUrl();
 const baseUrlI = `${baseUrl}/interview`;
 
 export default function QuestionsPage() {
@@ -13,9 +15,8 @@ export default function QuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
 
   const startInterview = async (question: string) => {
-    const res = await fetch(`${baseUrlI}/start`, {
+    const res = await authFetch(`${baseUrlI}/start`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question }),
     });
     const data = await res.json();

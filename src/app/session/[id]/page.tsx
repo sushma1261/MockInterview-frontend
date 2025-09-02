@@ -1,9 +1,10 @@
 "use client";
 
+import { getBaseUrl } from "@/app/utils/utils";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-const baseUrl = "https://mockinterview-backend-b4ek.onrender.com/interview";
+const baseUrl = `${getBaseUrl()}/interview`;
 
 export default function SessionPage({ params }: { params: { id: string } }) {
   const searchParams = useSearchParams();

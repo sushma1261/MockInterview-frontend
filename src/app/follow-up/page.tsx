@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { getBaseUrl } from "../utils/utils";
 
-const baseUrl = "https://mockinterview-backend-b4ek.onrender.com/interview";
+const baseUrl = `${getBaseUrl()}/interview`;
 
 export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
