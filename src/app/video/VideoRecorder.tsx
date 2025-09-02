@@ -64,10 +64,13 @@ export default function VideoRecorder() {
     formData.append("file", blob, "interview.webm");
 
     try {
-      const res = await fetch("http://localhost:8080/api/interview-video", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        "https://mockinterview-backend-b4ek.onrender.com/api/interview-video",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const data = await res.json();
       console.log("Upload response:", data);

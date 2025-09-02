@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const baseUrl = "http://localhost:8080/interview";
+const baseUrl = "https://mockinterview-backend-b4ek.onrender.com/interview";
 
 export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
