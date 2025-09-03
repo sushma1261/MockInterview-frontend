@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { getBaseUrl } from "../utils/utils";
+import { getBaseUrl } from "../../utils/utils";
 
 export default function VideoRecorder() {
   const videoRef = useRef<HTMLVideoElement>(null);
