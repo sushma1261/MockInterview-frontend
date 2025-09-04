@@ -1,6 +1,6 @@
 "use client";
 
-import { authFetch } from "@/lib/api";
+import { authFetch } from "@/app/lib/api";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
