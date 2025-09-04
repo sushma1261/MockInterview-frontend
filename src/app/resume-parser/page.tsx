@@ -124,15 +124,42 @@ const ChatComponent: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 flex flex-col h-[80vh] border rounded-lg shadow-lg">
+    <div className="mx-auto p-4 flex flex-col rounded-lg mt-2 w-full">
       {!sessionId && (
+        <section className="w-full justify-center items-center text-center">
+          <div className="mx-auto rounded-2xl text-gray-900 p-6 md:p-10">
+            <div className="flex items-start gap-4">
+              <div className="flex-1">
+                <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+                  Get Questions Tailored to Your Resume
+                </h1>
+                <p className="mt-2 text-sm md:text-base text-gray-700">
+                  Upload your resume and our AI will generate interview
+                  questions specifically designed to test your experience and
+                  skills.
+                </p>
+
+                <div className="mt-5">
+                  <button
+                    onClick={handleFileUploadClick}
+                    className="inline-flex items-center justify-center rounded-xl bg-emerald-500 hover:bg-emerald-600 px-4 md:px-5 py-2.5 text-sm font-medium shadow-lg transition"
+                  >
+                    Start Resume-Based Interview
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+      {/* {!sessionId && (
         <div
           className="text-green-600 flex justify-center items-center p-6 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-100"
           onClick={handleFileUploadClick}
         >
           <h3>📄 Upload Resume (PDF)</h3>
         </div>
-      )}
+      )} */}
 
       {/* Chat Window */}
       {sessionId && (
