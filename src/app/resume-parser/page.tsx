@@ -7,25 +7,37 @@ interface Message {
   sender: "user" | "bot" | "info";
   text: string;
 }
-const baseUrl = `${getBaseUrl()}/search`;
+const baseUrl = `${getBaseUrl()}/new/search`;
 
 const ChatComponent: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  // const [sessionId, setSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  const [resumeUploaded, setResumeUploaded] = useState(false);
 
   const handleResumeUpload = async (file: File) => {
     const formData = new FormData();
     formData.append("resume", file);
-    await authFetch(`${getBaseUrl()}/resume/upload/pdf`, {
+    await authFetch(`${getBaseUrl()}/new/resume/upload/pdf`, {
       method: "POST",
       body: formData,
-    });
-
-    // Once resume is uploaded, start interview
-    await startInterview();
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("Failed to upload resume");
+        }
+        setResumeUploaded(true);
+        // Once resume is uploaded, start interview
+        await startInterview();
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to upload resume. Please try again.");
+        return;
+      });
   };
 
   const startInterview = async () => {
@@ -34,10 +46,9 @@ const ChatComponent: React.FC = () => {
       const res = await authFetch(`${baseUrl}/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: "full stack developer" }),
+        body: JSON.stringify({}),
       });
       const data = await res.json();
-      setSessionId(data.sessionId);
 
       const msgs: Message[] = [{ sender: "bot", text: data.question }];
       if (data.docs?.length > 0) {
@@ -55,7 +66,7 @@ const ChatComponent: React.FC = () => {
   };
 
   const sendAnswer = async () => {
-    if (!input.trim() || !sessionId) return;
+    if (!input.trim() || !resumeUploaded) return;
     const userMessage: Message = { sender: "user", text: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
@@ -64,7 +75,7 @@ const ChatComponent: React.FC = () => {
       const res = await authFetch(`${baseUrl}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, answer: input }),
+        body: JSON.stringify({ answer: input }),
       });
       const data = await res.json();
       if (data.followUp) {
@@ -87,13 +98,12 @@ const ChatComponent: React.FC = () => {
   };
 
   const endInterview = async () => {
-    if (!sessionId) return;
+    if (!resumeUploaded) return;
     setLoading(true);
     try {
       const res = await authFetch(`${baseUrl}/end`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId }),
       });
       const data = await res.json();
       setFeedback(data.feedback);
@@ -125,7 +135,7 @@ const ChatComponent: React.FC = () => {
 
   return (
     <div className="mx-auto p-4 flex flex-col rounded-lg mt-2 w-full">
-      {!sessionId && (
+      {!resumeUploaded && (
         <section className="w-full justify-center items-center text-center">
           <div className="mx-auto rounded-2xl text-gray-900 p-6 md:p-10">
             <div className="flex items-start gap-4">
@@ -142,7 +152,7 @@ const ChatComponent: React.FC = () => {
                 <div className="mt-5">
                   <button
                     onClick={handleFileUploadClick}
-                    className="inline-flex items-center justify-center rounded-xl bg-emerald-500 hover:bg-emerald-600 px-4 md:px-5 py-2.5 text-sm font-medium shadow-lg transition"
+                    className="inline-flex items-center justify-center rounded bg-emerald-500 hover:bg-emerald-600 px-4 md:px-5 py-2.5 text-sm font-medium shadow-lg transition"
                   >
                     Start Resume-Based Interview
                   </button>
@@ -152,17 +162,9 @@ const ChatComponent: React.FC = () => {
           </div>
         </section>
       )}
-      {/* {!sessionId && (
-        <div
-          className="text-green-600 flex justify-center items-center p-6 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-100"
-          onClick={handleFileUploadClick}
-        >
-          <h3>📄 Upload Resume (PDF)</h3>
-        </div>
-      )} */}
 
       {/* Chat Window */}
-      {sessionId && (
+      {resumeUploaded && (
         <>
           <div className="flex-1 overflow-y-auto space-y-2 p-2">
             {messages.map((msg, idx) => (
@@ -180,7 +182,9 @@ const ChatComponent: React.FC = () => {
               </div>
             ))}
           </div>
-
+          {loading && (
+            <div className="p-2 text-gray-500 italic">Thinking...</div>
+          )}
           {/* Input Area */}
           {!feedback && (
             <div className="flex gap-2 mt-2">
