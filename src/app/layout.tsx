@@ -32,8 +32,9 @@ export default function RootLayout({
       >
         <AuthProvider>
           <Navbar />
+
           {children}
-          <Footer />
+          {process.env.NODE_ENV === "production" && <Footer />}
         </AuthProvider>
       </body>
     </html>

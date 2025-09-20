@@ -1,31 +1,46 @@
 "use client";
 import React, { useState } from "react";
+import FeedbackCard from "../components/Feedback";
 import { authFetch } from "../lib/api";
+import { useAuth } from "../utils/AuthContext";
 import { getBaseUrl } from "../utils/utils";
 
 interface Message {
   sender: "user" | "bot" | "info";
   text: string;
 }
-const baseUrl = `${getBaseUrl()}/search`;
+const baseUrl = `${getBaseUrl()}/new/search`;
 
 const ChatComponent: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  // const [sessionId, setSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const { isLoggedIn } = useAuth();
+
+  const [resumeUploaded, setResumeUploaded] = useState(false);
 
   const handleResumeUpload = async (file: File) => {
     const formData = new FormData();
     formData.append("resume", file);
-    await authFetch(`${getBaseUrl()}/resume/upload/pdf`, {
+    await authFetch(`${getBaseUrl()}/new/resume/upload/pdf`, {
       method: "POST",
       body: formData,
-    });
-
-    // Once resume is uploaded, start interview
-    await startInterview();
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("Failed to upload resume");
+        }
+        setResumeUploaded(true);
+        // Once resume is uploaded, start interview
+        await startInterview();
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to upload resume. Please try again.");
+        return;
+      });
   };
 
   const startInterview = async () => {
@@ -34,12 +49,13 @@ const ChatComponent: React.FC = () => {
       const res = await authFetch(`${baseUrl}/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: "full stack developer" }),
+        body: JSON.stringify({}),
       });
       const data = await res.json();
-      setSessionId(data.sessionId);
 
-      const msgs: Message[] = [{ sender: "bot", text: data.question }];
+      const msgs: Message[] = [
+        { sender: "bot", text: data?.question?.question },
+      ];
       if (data.docs?.length > 0) {
         msgs.push({
           sender: "info",
@@ -55,7 +71,7 @@ const ChatComponent: React.FC = () => {
   };
 
   const sendAnswer = async () => {
-    if (!input.trim() || !sessionId) return;
+    if (!input.trim() || !resumeUploaded) return;
     const userMessage: Message = { sender: "user", text: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
@@ -64,19 +80,30 @@ const ChatComponent: React.FC = () => {
       const res = await authFetch(`${baseUrl}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, answer: input }),
+        body: JSON.stringify({ answer: input }),
       });
       const data = await res.json();
-      if (data.followUp) {
+      if (data.type == "next_question") {
+        if (data.question) {
+          setMessages((prev) => [
+            ...prev,
+            { sender: "bot", text: data?.question },
+          ]);
+        }
+        if (data.docs && data.docs.length > 0) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              sender: "info",
+              text: `📄 Related Info:\n${data.docs.join("\n")}`,
+            },
+          ]);
+        }
+      } else if (data.type == "feedback") {
+        setFeedback(JSON.stringify(data));
         setMessages((prev) => [
           ...prev,
-          { sender: "bot", text: data.followUp },
-        ]);
-      }
-      if (data.docs && data.docs.length > 0) {
-        setMessages((prev) => [
-          ...prev,
-          { sender: "info", text: `📄 Related Info:\n${data.docs.join("\n")}` },
+          { sender: "bot", text: "✅ Interview ended. See feedback below." },
         ]);
       }
     } catch (err) {
@@ -87,16 +114,15 @@ const ChatComponent: React.FC = () => {
   };
 
   const endInterview = async () => {
-    if (!sessionId) return;
+    if (!resumeUploaded) return;
     setLoading(true);
     try {
       const res = await authFetch(`${baseUrl}/end`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId }),
       });
       const data = await res.json();
-      setFeedback(data.feedback);
+      setFeedback(JSON.stringify(data.feedback));
       setMessages((prev) => [
         ...prev,
         { sender: "bot", text: "✅ Interview ended. See feedback below." },
@@ -123,9 +149,27 @@ const ChatComponent: React.FC = () => {
     el.click();
   };
 
+  if (!isLoggedIn) {
+    return (
+      <div className="mx-auto p-4 flex flex-col rounded-lg mt-2 w-full">
+        <section className="w-full justify-center items-center text-center">
+          <div className="mx-auto rounded-2xl text-gray-900 p-6 md:p-10">
+            <div className="flex items-start gap-4">
+              <div className="flex-1">
+                <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+                  Please log in to start the mock interview.
+                </h1>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto p-4 flex flex-col rounded-lg mt-2 w-full">
-      {!sessionId && (
+      {!resumeUploaded && (
         <section className="w-full justify-center items-center text-center">
           <div className="mx-auto rounded-2xl text-gray-900 p-6 md:p-10">
             <div className="flex items-start gap-4">
@@ -142,7 +186,7 @@ const ChatComponent: React.FC = () => {
                 <div className="mt-5">
                   <button
                     onClick={handleFileUploadClick}
-                    className="inline-flex items-center justify-center rounded-xl bg-emerald-500 hover:bg-emerald-600 px-4 md:px-5 py-2.5 text-sm font-medium shadow-lg transition"
+                    className="inline-flex items-center justify-center rounded bg-emerald-500 hover:bg-emerald-600 px-4 md:px-5 py-2.5 text-sm font-medium shadow-lg transition"
                   >
                     Start Resume-Based Interview
                   </button>
@@ -152,17 +196,9 @@ const ChatComponent: React.FC = () => {
           </div>
         </section>
       )}
-      {/* {!sessionId && (
-        <div
-          className="text-green-600 flex justify-center items-center p-6 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-100"
-          onClick={handleFileUploadClick}
-        >
-          <h3>📄 Upload Resume (PDF)</h3>
-        </div>
-      )} */}
 
       {/* Chat Window */}
-      {sessionId && (
+      {resumeUploaded && (
         <>
           <div className="flex-1 overflow-y-auto space-y-2 p-2">
             {messages.map((msg, idx) => (
@@ -180,7 +216,9 @@ const ChatComponent: React.FC = () => {
               </div>
             ))}
           </div>
-
+          {loading && (
+            <div className="p-2 text-gray-500 italic">Thinking...</div>
+          )}
           {/* Input Area */}
           {!feedback && (
             <div className="flex gap-2 mt-2">
@@ -210,12 +248,7 @@ const ChatComponent: React.FC = () => {
           )}
 
           {/* Feedback Section */}
-          {feedback && (
-            <div className="mt-4 bg-gray-100 p-4 rounded-lg overflow-y-auto max-h-[30vh]">
-              <h3 className="font-bold text-lg mb-2">📋 Interview Feedback</h3>
-              <pre className="whitespace-pre-wrap text-sm">{feedback}</pre>
-            </div>
-          )}
+          {feedback && <FeedbackCard feedback={JSON.parse(feedback)} />}
         </>
       )}
     </div>
