@@ -17,11 +17,13 @@ const ChatComponent: React.FC = () => {
   // const [sessionId, setSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [resumeUploadLoader, setResumeUploadLoader] = useState(false);
   const { isLoggedIn } = useAuth();
 
   const [resumeUploaded, setResumeUploaded] = useState(false);
 
   const handleResumeUpload = async (file: File) => {
+    setResumeUploadLoader(true);
     const formData = new FormData();
     formData.append("resume", file);
     await authFetch(`${getBaseUrl()}/new/resume/upload/pdf`, {
@@ -33,6 +35,7 @@ const ChatComponent: React.FC = () => {
           throw new Error("Failed to upload resume");
         }
         setResumeUploaded(true);
+        setResumeUploadLoader(false);
         // Once resume is uploaded, start interview
         await startInterview();
       })
@@ -187,8 +190,11 @@ const ChatComponent: React.FC = () => {
                   <button
                     onClick={handleFileUploadClick}
                     className="inline-flex items-center justify-center rounded bg-emerald-500 hover:bg-emerald-600 px-4 md:px-5 py-2.5 text-sm font-medium shadow-lg transition"
+                    disabled={resumeUploadLoader}
                   >
-                    Start Resume-Based Interview
+                    {resumeUploadLoader
+                      ? "Give me a moment to review your resume before we start"
+                      : "Let's start your interview, upload your resume first"}
                   </button>
                 </div>
               </div>
