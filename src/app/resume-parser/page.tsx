@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from "react";
+import FeedbackCard from "../components/Feedback";
 import { authFetch } from "../lib/api";
+import { useAuth } from "../utils/AuthContext";
 import { getBaseUrl } from "../utils/utils";
 
 interface Message {
@@ -15,6 +17,7 @@ const ChatComponent: React.FC = () => {
   // const [sessionId, setSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const { isLoggedIn } = useAuth();
 
   const [resumeUploaded, setResumeUploaded] = useState(false);
 
@@ -50,7 +53,9 @@ const ChatComponent: React.FC = () => {
       });
       const data = await res.json();
 
-      const msgs: Message[] = [{ sender: "bot", text: data.question }];
+      const msgs: Message[] = [
+        { sender: "bot", text: data?.question?.question },
+      ];
       if (data.docs?.length > 0) {
         msgs.push({
           sender: "info",
@@ -78,16 +83,27 @@ const ChatComponent: React.FC = () => {
         body: JSON.stringify({ answer: input }),
       });
       const data = await res.json();
-      if (data.followUp) {
+      if (data.type == "next_question") {
+        if (data.question) {
+          setMessages((prev) => [
+            ...prev,
+            { sender: "bot", text: data?.question },
+          ]);
+        }
+        if (data.docs && data.docs.length > 0) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              sender: "info",
+              text: `📄 Related Info:\n${data.docs.join("\n")}`,
+            },
+          ]);
+        }
+      } else if (data.type == "feedback") {
+        setFeedback(JSON.stringify(data));
         setMessages((prev) => [
           ...prev,
-          { sender: "bot", text: data.followUp },
-        ]);
-      }
-      if (data.docs && data.docs.length > 0) {
-        setMessages((prev) => [
-          ...prev,
-          { sender: "info", text: `📄 Related Info:\n${data.docs.join("\n")}` },
+          { sender: "bot", text: "✅ Interview ended. See feedback below." },
         ]);
       }
     } catch (err) {
@@ -106,7 +122,7 @@ const ChatComponent: React.FC = () => {
         headers: { "Content-Type": "application/json" },
       });
       const data = await res.json();
-      setFeedback(data.feedback);
+      setFeedback(JSON.stringify(data.feedback));
       setMessages((prev) => [
         ...prev,
         { sender: "bot", text: "✅ Interview ended. See feedback below." },
@@ -132,6 +148,24 @@ const ChatComponent: React.FC = () => {
     });
     el.click();
   };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="mx-auto p-4 flex flex-col rounded-lg mt-2 w-full">
+        <section className="w-full justify-center items-center text-center">
+          <div className="mx-auto rounded-2xl text-gray-900 p-6 md:p-10">
+            <div className="flex items-start gap-4">
+              <div className="flex-1">
+                <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+                  Please log in to start the mock interview.
+                </h1>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto p-4 flex flex-col rounded-lg mt-2 w-full">
@@ -214,12 +248,7 @@ const ChatComponent: React.FC = () => {
           )}
 
           {/* Feedback Section */}
-          {feedback && (
-            <div className="mt-4 bg-gray-100 p-4 rounded-lg overflow-y-auto max-h-[30vh]">
-              <h3 className="font-bold text-lg mb-2">📋 Interview Feedback</h3>
-              <pre className="whitespace-pre-wrap text-sm">{feedback}</pre>
-            </div>
-          )}
+          {feedback && <FeedbackCard feedback={JSON.parse(feedback)} />}
         </>
       )}
     </div>

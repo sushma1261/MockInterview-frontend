@@ -14,7 +14,6 @@ export async function authFetch(url: string, options: RequestInit = {}) {
   if (options.body && !(options.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
-  console.log("Auth Token:", token); // Debug log
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }

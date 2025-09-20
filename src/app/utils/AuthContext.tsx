@@ -13,6 +13,7 @@ import {
   ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -21,6 +22,7 @@ interface AuthContextType {
   loading: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
+  isLoggedIn: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -28,6 +30,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   login: async () => {},
   logout: async () => {},
+  isLoggedIn: false,
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -53,8 +56,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await signOut(auth);
   };
 
+  const isLoggedIn = useMemo(() => !!user, [user]);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, isLoggedIn }}>
       {children}
     </AuthContext.Provider>
   );
