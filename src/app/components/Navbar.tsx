@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../utils/AuthContext";
 
@@ -8,6 +9,7 @@ export default function Navbar() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -34,7 +36,12 @@ export default function Navbar() {
 
   return (
     <nav className="flex justify-between items-center p-4 shadow-md bg-white">
-      <h1 className="text-xl font-bold">Mock Interview</h1>
+      <h1
+        onClick={() => router.push("/")}
+        className="text-xl font-bold cursor-pointer hover:text-blue-600"
+      >
+        Mock Interview
+      </h1>{" "}
       <div className="relative" ref={menuRef}>
         {user ? (
           <>

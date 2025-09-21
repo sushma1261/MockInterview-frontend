@@ -12,13 +12,21 @@ export default function QuestionsPage() {
         Practice your interview skills with confidence. Do you want to get
         started?
       </p>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <button
+          onClick={() => router.push("/resume-parser")}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 justify-self shadow-lg transition"
+        >
+          Continue
+        </button>
 
-      <button
-        onClick={() => router.push("/resume-parser")}
-        className="mb-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 justify-self shadow-lg transition"
-      >
-        Continue
-      </button>
+        <button
+          onClick={() => router.push("/voice")}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 shadow-lg transition"
+        >
+          Try Voice!
+        </button>
+      </div>
     </div>
   );
 }
