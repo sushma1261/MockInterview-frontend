@@ -3,6 +3,37 @@ import { useRef, useState } from "react";
 import { MIMETYPE_AUDIO_WEBM } from "../utils/constants";
 import { getBaseUrl } from "../utils/utils";
 
+interface SpeechRecognitionConstructor {
+  new (): SpeechRecognition;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onstart: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+}
+
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  }
+}
+
 export default function VoiceInterview() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -12,15 +43,19 @@ export default function VoiceInterview() {
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const sendBase64AudioToBackend =
+    process.env.SEND_BASE64_AUDIO_TO_BACKEND === "true";
 
-  const handleSubmit = async (payload?: { audioBase64?: string }) => {
-    if (!question.trim() && !payload?.audioBase64) return;
+  const handleSubmit = async (payload?: {
+    audioBase64?: string;
+    text?: string;
+  }) => {
+    if (!question.trim() && !payload?.audioBase64 && !payload?.text) return;
     setLoading(true);
     setAnswer("");
     setAudioUrl(null);
 
     try {
-      console.log("audioBase64?? ", payload?.audioBase64);
       const res = await fetch(`${getBaseUrl()}/voice/getVoice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,7 +65,7 @@ export default function VoiceInterview() {
                 base64data: payload.audioBase64,
                 mimeType: MIMETYPE_AUDIO_WEBM,
               }
-            : { question }
+            : { question: payload?.text ?? question }
         ),
       });
 
@@ -42,9 +77,8 @@ export default function VoiceInterview() {
       }
 
       setAnswer(data.answer);
-      if (!data.audioBase64) return;
-      else {
-        // ✅ convert base64 -> blob -> object URL
+
+      if (data.audioBase64) {
         const audioBlob = b64toBlob(data.audioBase64, data.mimeType);
         const url = URL.createObjectURL(audioBlob);
         setAudioUrl(url);
@@ -57,49 +91,82 @@ export default function VoiceInterview() {
     }
   };
 
-  // 🎤 Start / Stop recording
   const toggleRecording = async () => {
     if (recording) {
-      // Stop recording
       mediaRecorderRef.current?.stop();
       setRecording(false);
     } else {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
-        const mediaRecorder = new MediaRecorder(stream);
-        mediaRecorderRef.current = mediaRecorder;
-        audioChunksRef.current = [];
-
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunksRef.current, {
-            type: MIMETYPE_AUDIO_WEBM,
+      if (sendBase64AudioToBackend) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
           });
-          const reader = new FileReader();
-          reader.readAsDataURL(audioBlob);
-          reader.onloadend = () => {
-            console.log({ result: reader.result });
-            const base64data = (reader.result as string).split(",")[1];
-            handleSubmit({ audioBase64: base64data });
+          const mediaRecorder = new MediaRecorder(stream);
+          mediaRecorderRef.current = mediaRecorder;
+          audioChunksRef.current = [];
+
+          mediaRecorder.ondataavailable = (event: BlobEvent) => {
+            if (event.data.size > 0) {
+              audioChunksRef.current.push(event.data);
+            }
           };
+
+          mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunksRef.current, {
+              type: MIMETYPE_AUDIO_WEBM,
+            });
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = () => {
+              const base64data = (reader.result as string).split(",")[1];
+              handleSubmit({ audioBase64: base64data });
+            };
+          };
+
+          mediaRecorder.start();
+          setRecording(true);
+        } catch (err) {
+          console.error("Mic access denied:", err);
+        }
+      } else {
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+          alert("Speech recognition not supported in this browser.");
+          return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = "en-US";
+
+        recognition.onstart = () => {
+          setRecording(true);
         };
 
-        mediaRecorder.start();
-        setRecording(true);
-      } catch (err) {
-        console.error("Mic access denied:", err);
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+          const transcript = event.results[0][0].transcript;
+          console.log("Transcribed:", transcript);
+          setQuestion(transcript);
+          handleSubmit({ text: transcript });
+        };
+
+        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+          console.error("Speech recognition error", event.error);
+          setRecording(false);
+        };
+
+        recognition.onend = () => {
+          setRecording(false);
+        };
+
+        recognition.start();
       }
     }
   };
 
-  // helper: convert base64 to Blob
   function b64toBlob(base64: string, mimeType: string) {
     const byteCharacters = atob(base64);
     const byteNumbers = new Array(byteCharacters.length);
@@ -121,7 +188,6 @@ export default function VoiceInterview() {
         response!
       </p>
 
-      {/* User Input */}
       <textarea
         value={question}
         onChange={(e) => setQuestion(e.target.value)}
@@ -138,7 +204,6 @@ export default function VoiceInterview() {
           {loading ? "Thinking..." : "Submit Question"}
         </button>
 
-        {/* 🎤 Record Button */}
         <button
           onClick={toggleRecording}
           className={`px-4 py-2 rounded-md text-white shadow-md transition ${
@@ -147,11 +212,10 @@ export default function VoiceInterview() {
               : "bg-green-600 hover:bg-green-700"
           }`}
         >
-          {recording ? "Stop Recording" : "Record Voice"}
+          {recording ? "Stop" : "Record Voice"}
         </button>
       </div>
 
-      {/* Show Answer */}
       {answer && (
         <div className="w-full max-w-md p-4 border rounded-md bg-gray-50">
           <p className="font-semibold">AI Answer:</p>
@@ -159,7 +223,6 @@ export default function VoiceInterview() {
         </div>
       )}
 
-      {/* Play Audio */}
       {audioUrl && (
         <audio controls src={audioUrl} className="mt-2 w-full max-w-md" />
       )}
