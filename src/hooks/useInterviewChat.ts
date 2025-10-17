@@ -1,0 +1,201 @@
+import { authFetch } from "@/lib/api";
+import { getBaseUrl } from "@/lib/utils";
+import { ChatResponse, FeedbackData, Message } from "@/types/chat";
+import { useState } from "react";
+
+export function useInterviewChat() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [interviewStarted, setInterviewStarted] = useState(false);
+  const [interviewComplete, setInterviewComplete] = useState(false);
+  const [currentQuestionNumber, setCurrentQuestionNumber] = useState(0);
+  const [feedback, setFeedback] = useState<FeedbackData | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [jobDescription, setJobDescription] = useState<string>("");
+
+  const addMessage = (
+    type: "user" | "assistant" | "system",
+    content: string,
+    metadata?: Record<string, unknown>
+  ) => {
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      type,
+      content,
+      timestamp: new Date(),
+      metadata,
+    };
+    setMessages((prev) => [...prev, newMessage]);
+  };
+
+  const sendRequest = async (
+    action: string,
+    message?: string
+  ): Promise<ChatResponse | null> => {
+    try {
+      const body: Record<string, unknown> = {
+        action,
+        message,
+        question_number: currentQuestionNumber,
+      };
+
+      // Include job_description when starting the interview
+      if (action === "start") {
+        body.job_description = jobDescription;
+      }
+
+      const response = await authFetch(`${getBaseUrl()}/api/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error sending request:", error);
+      addMessage("system", "Error: Failed to communicate with the server.");
+      return null;
+    }
+  };
+
+  const startInterview = async () => {
+    setIsLoading(true);
+    setInterviewStarted(true);
+    addMessage("system", "🎯 Starting your interview...");
+
+    const response = await sendRequest("start");
+
+    if (response && response.question) {
+      setCurrentQuestionNumber(response.question_number || 1);
+
+      addMessage("assistant", response.question, {
+        question_number: response.question_number,
+        question_type: response.question_type,
+        reasoning: response.reasoning,
+      });
+    }
+
+    setIsLoading(false);
+  };
+
+  const sendAnswer = async () => {
+    if (!inputMessage.trim() || isLoading) return;
+
+    const userMessage = inputMessage.trim();
+    setInputMessage("");
+    setIsLoading(true);
+
+    addMessage("user", userMessage);
+
+    const response = await sendRequest("continue", userMessage);
+
+    if (response) {
+      if (response.type === "ask_next_question" && response.question) {
+        setCurrentQuestionNumber(
+          response.question_number || currentQuestionNumber + 1
+        );
+        addMessage("assistant", response.question, {
+          question_number: response.question_number,
+          question_type: response.question_type,
+          reasoning: response.reasoning,
+        });
+      } else if (response.type === "generate_feedback" && response.feedback) {
+        setFeedback(response.feedback);
+        setShowFeedback(true);
+
+        if (response.is_complete) {
+          setInterviewComplete(true);
+          addMessage(
+            "system",
+            "✅ Interview complete! Your feedback is ready."
+          );
+        }
+      }
+    }
+
+    setIsLoading(false);
+  };
+
+  const requestFeedback = async () => {
+    setIsLoading(true);
+    addMessage("system", "📊 Generating your feedback...");
+
+    const response = await sendRequest("feedback");
+
+    if (response && response.feedback) {
+      setFeedback(response.feedback);
+      setShowFeedback(true);
+      setInterviewComplete(true);
+      addMessage("system", "✅ Your feedback is ready!");
+    }
+
+    setIsLoading(false);
+  };
+
+  const skipQuestion = async () => {
+    setIsLoading(true);
+    addMessage("system", "⏭️ Skipping to next question...");
+
+    const response = await sendRequest("skip");
+
+    if (response && response.question) {
+      setCurrentQuestionNumber(
+        response.question_number || currentQuestionNumber + 1
+      );
+      addMessage("assistant", response.question, {
+        question_number: response.question_number,
+        question_type: response.question_type,
+        reasoning: response.reasoning,
+      });
+    }
+
+    setIsLoading(false);
+  };
+
+  const restartInterview = () => {
+    setMessages([]);
+    setFeedback(null);
+    setShowFeedback(false);
+    setInterviewComplete(false);
+    setCurrentQuestionNumber(0);
+    setInterviewStarted(false);
+    setUploadedFile(null);
+    setJobDescription("");
+    setInputMessage("");
+  };
+
+  return {
+    // State
+    messages,
+    inputMessage,
+    isLoading,
+    interviewStarted,
+    interviewComplete,
+    currentQuestionNumber,
+    feedback,
+    showFeedback,
+    uploadedFile,
+    jobDescription,
+
+    // Setters
+    setInputMessage,
+    setShowFeedback,
+    setUploadedFile,
+    setJobDescription,
+
+    // Actions
+    startInterview,
+    sendAnswer,
+    requestFeedback,
+    skipQuestion,
+    restartInterview,
+  };
+}
