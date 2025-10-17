@@ -1,8 +1,8 @@
 "use client";
 
+import { authFetch } from "@/lib/api";
+import { getBaseUrl } from "@/lib/utils";
 import React, { useEffect, useRef, useState } from "react";
-import { authFetch } from "../lib/api";
-import { getBaseUrl } from "../utils/utils";
 
 // Types
 interface Message {
@@ -278,14 +278,6 @@ const InterviewChat: React.FC = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  const countdownRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (countdownRef.current) clearInterval(countdownRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

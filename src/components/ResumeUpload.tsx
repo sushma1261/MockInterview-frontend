@@ -1,6 +1,6 @@
+import { authFetch } from "@/lib/api";
+import { getBaseUrl } from "@/lib/utils";
 import { useRef, useState } from "react";
-import { authFetch } from "../lib/api";
-import { getBaseUrl } from "../utils/utils";
 
 interface ResumeUploadProps {
   onUpload: (file: File) => void;
@@ -27,9 +27,6 @@ export default function ResumeUpload({ onUpload }: ResumeUploadProps) {
         }
         setResumeUploadLoader(false);
         onUpload(file);
-
-        // Once resume is uploaded, start interview
-        // await startInterview();
       })
       .catch((err) => {
         console.error(err);
@@ -49,7 +46,6 @@ export default function ResumeUpload({ onUpload }: ResumeUploadProps) {
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col md:flex-row justify-center items-start">
       <div className="flex flex-col gap-6">
-        {/* About Section */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
             💡 About This Session
@@ -62,7 +58,6 @@ export default function ResumeUpload({ onUpload }: ResumeUploadProps) {
           </p>
         </div>
 
-        {/* Upload Resume Section */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
           <h3 className="text-lg font-medium text-gray-800 mb-3">
             Upload Your Resume
@@ -96,7 +91,6 @@ export default function ResumeUpload({ onUpload }: ResumeUploadProps) {
           />
         </div>
 
-        {/* Tips Section */}
         <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl text-gray-700">
           <h3 className="text-lg font-semibold text-blue-700">
             💬 Tips for Resume Interviews

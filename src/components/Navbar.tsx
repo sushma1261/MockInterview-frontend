@@ -1,8 +1,8 @@
 "use client";
 
+import { useAuth } from "@/lib/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "../utils/AuthContext";
 
 export default function Navbar() {
   const { user, login, logout } = useAuth();

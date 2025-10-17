@@ -1,9 +1,9 @@
 "use client";
+import FeedbackCard from "@/components/Feedback";
+import { authFetch } from "@/lib/api";
+import { useAuth } from "@/lib/AuthContext";
+import { getBaseUrl } from "@/lib/utils";
 import React, { useState } from "react";
-import FeedbackCard from "../components/Feedback";
-import { authFetch } from "../lib/api";
-import { useAuth } from "../utils/AuthContext";
-import { getBaseUrl } from "../utils/utils";
 
 interface Message {
   sender: "user" | "bot" | "info";

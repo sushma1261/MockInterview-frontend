@@ -1,7 +1,7 @@
 "use client";
+import Chat from "@/components/Chat";
+import ResumeUpload from "@/components/ResumeUpload";
 import { useState } from "react";
-import Chat from "../components/Chat";
-import ResumeUpload from "../components/ResumeUpload";
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null);

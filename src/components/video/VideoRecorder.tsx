@@ -1,7 +1,7 @@
 "use client";
 
+import { getBaseUrl } from "@/lib/utils";
 import { useRef, useState } from "react";
-import { getBaseUrl } from "../../utils/utils";
 
 export default function VideoRecorder() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -20,7 +20,10 @@ export default function VideoRecorder() {
       });
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        const videoEl = videoRef.current as HTMLVideoElement & {
+          srcObject?: MediaStream;
+        };
+        videoEl.srcObject = stream;
       }
 
       const recorder = new MediaRecorder(stream);
@@ -51,9 +54,13 @@ export default function VideoRecorder() {
     setRecording(false);
 
     // stop camera feed
-    if (videoRef.current?.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+    if (videoRef.current) {
+      const videoEl = videoRef.current as HTMLVideoElement & {
+        srcObject?: MediaStream;
+      };
+      const tracks = videoEl.srcObject?.getTracks() || [];
       tracks.forEach((track) => track.stop());
+      videoEl.srcObject = null as unknown as MediaStream;
     }
   };
 

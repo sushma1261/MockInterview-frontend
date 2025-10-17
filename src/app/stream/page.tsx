@@ -1,7 +1,7 @@
 "use client";
+import { authFetch } from "@/lib/api";
+import { getBaseUrl } from "@/lib/utils";
 import { useState } from "react";
-import { authFetch } from "../lib/api";
-import { getBaseUrl } from "../utils/utils";
 
 /**
  * Hook for streaming chat - handles SSE connection
@@ -9,7 +9,12 @@ import { getBaseUrl } from "../utils/utils";
 export function useStreamingChat() {
   const [streamingText, setStreamingText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [question, setQuestion] = useState<any>(null);
+  type StreamQuestion = {
+    question_number?: number;
+    question?: string;
+    question_type?: string;
+  };
+  const [question, setQuestion] = useState<StreamQuestion | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   /**
@@ -300,7 +305,7 @@ export default function InterviewChat() {
  * Example: Advanced streaming with more control
  */
 export function AdvancedStreamingExample() {
-  const [chunks, setChunks] = useState<any[]>([]);
+  const [chunks, setChunks] = useState<unknown[]>([]);
 
   const handleStreamingChat = async () => {
     const response = await authFetch("/api/chat/stream", {
@@ -355,9 +360,7 @@ export function AdvancedStreamingExample() {
             key={i}
             style={{ marginBottom: 10, padding: 10, border: "1px solid #ccc" }}
           >
-            <strong>Type:</strong> {chunk.type}
-            <br />
-            <strong>Content:</strong> {JSON.stringify(chunk, null, 2)}
+            <strong>Content:</strong> {JSON.stringify(chunk)}
           </div>
         ))}
       </div>

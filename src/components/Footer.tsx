@@ -28,10 +28,6 @@ export default function Footer() {
               </Link>
             </li>
           </ul>
-          {/* <li><a href="/about" className="hover:text-white">About</a></li>
-            <li><a href="/features" className="hover:text-white">Features</a></li>
-            <li><a href="/contact" className="hover:text-white">Contact</a></li> */}
-          {/* </ul> */}
         </div>
 
         {/* Contact / Social */}
@@ -39,11 +35,9 @@ export default function Footer() {
           <h2 className="text-sm font-semibold text-white">Connect</h2>
           <ul className="mt-2 space-y-1 text-xs">
             <li className="flex items-center gap-2">
-              {/* <Mail size={14} />  */}
               <a href="mailto:">support@mockitup.com</a>
             </li>
             <li className="flex items-center gap-2">
-              {/* <Github size={14} />  */}
               <a
                 href="https://github.com/sushma1261"
                 target="_blank"
@@ -53,7 +47,6 @@ export default function Footer() {
               </a>
             </li>
             <li className="flex items-center gap-2">
-              {/* <Linkedin size={14} />  */}
               <a
                 href="https://linkedin.com/in/sushma-varma"
                 target="_blank"

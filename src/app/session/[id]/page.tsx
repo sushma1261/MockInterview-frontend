@@ -1,6 +1,6 @@
 "use client";
 
-import { getBaseUrl } from "@/app/utils/utils";
+import { getBaseUrl } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 

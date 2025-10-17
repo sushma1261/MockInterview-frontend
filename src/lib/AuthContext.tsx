@@ -1,6 +1,6 @@
 "use client";
 
-import { auth } from "@/app/lib/firebase";
+import { auth } from "@/lib/firebase";
 import {
   GoogleAuthProvider,
   onAuthStateChanged,

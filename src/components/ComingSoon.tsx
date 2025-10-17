@@ -46,7 +46,6 @@ export default function ComingSoon({
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-6">
       <div className="max-w-2xl w-full">
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-          {/* Header */}
           <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-8 text-center">
             <div className="inline-block p-4 bg-white/20 backdrop-blur-sm rounded-2xl mb-4">
               <span className="text-6xl">{icon}</span>
@@ -55,7 +54,6 @@ export default function ComingSoon({
             <p className="text-white/90 text-lg">{description}</p>
           </div>
 
-          {/* Content */}
           <div className="p-8 text-center">
             <div className="mb-8">
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 mb-4">
@@ -70,7 +68,6 @@ export default function ComingSoon({
               </p>
             </div>
 
-            {/* Features Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               {features.map((feature, index) => (
                 <div
@@ -86,7 +83,6 @@ export default function ComingSoon({
               ))}
             </div>
 
-            {/* CTA */}
             <button
               onClick={() => router.push("/")}
               className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 mx-auto"
@@ -109,7 +105,6 @@ export default function ComingSoon({
           </div>
         </div>
 
-        {/* Info Banner */}
         <div className="mt-6 bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white/80 shadow-sm">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0">

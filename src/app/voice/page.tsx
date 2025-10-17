@@ -1,7 +1,7 @@
 "use client";
+import { MIMETYPE_AUDIO_WEBM } from "@/lib/constants";
+import { getBaseUrl } from "@/lib/utils";
 import { useRef, useState } from "react";
-import { MIMETYPE_AUDIO_WEBM } from "../utils/constants";
-import { getBaseUrl } from "../utils/utils";
 
 interface SpeechRecognitionConstructor {
   new (): SpeechRecognition;

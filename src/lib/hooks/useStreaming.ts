@@ -1,5 +1,5 @@
+import { getBaseUrl } from "@/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getBaseUrl } from "../utils/utils";
 
 interface UseStreamingChatOptions {
   onChunk?: (text: string) => void;

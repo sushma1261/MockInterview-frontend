@@ -1,7 +1,7 @@
 "use client";
+import FeedbackCard from "@/components/Feedback";
+import { authFetch } from "@/lib/api";
 import { useState } from "react";
-import FeedbackCard from "../components/Feedback";
-import { authFetch } from "../lib/api";
 
 interface Message {
   sender: "user" | "bot" | "system";
@@ -22,7 +22,6 @@ const Chat = () => {
     setLoading(true);
 
     try {
-      // Call backend API (mock example below)
       const response = await authFetch("/api/answer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
