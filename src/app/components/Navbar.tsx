@@ -91,12 +91,6 @@ export default function Navbar() {
                   onClick={() => setMenuOpen(!menuOpen)}
                   className="flex items-center gap-3 hover:bg-gray-50 px-3 py-2 rounded-full transition-all duration-200 group"
                 >
-                  <div className="hidden sm:block text-right">
-                    <p className="text-sm font-semibold text-gray-700 group-hover:text-indigo-600 transition-colors">
-                      {user.displayName || "User"}
-                    </p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                  </div>
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold bg-gradient-to-br ${getAvatarGradient()} shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-200 ring-2 ring-white`}
                   >

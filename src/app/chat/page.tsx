@@ -44,12 +44,16 @@ interface ResumeUploadSectionProps {
   onStartInterview: () => void;
   uploadedFile: File | null;
   onFileUpload: (file: File) => void;
+  jobDescription: string;
+  onJobDescriptionChange: (description: string) => void;
 }
 
 const ResumeUploadSection: React.FC<ResumeUploadSectionProps> = ({
   onStartInterview,
   uploadedFile,
   onFileUpload,
+  jobDescription,
+  onJobDescriptionChange,
 }) => {
   const [resumeUploadLoader, setResumeUploadLoader] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -113,9 +117,9 @@ const ResumeUploadSection: React.FC<ResumeUploadSectionProps> = ({
           </h2>
           <p className="text-gray-600 text-sm mt-2 leading-relaxed">
             In this session, the AI will generate interview questions
-            dynamically based on your uploaded resume, creating a personalized
-            interview experience. Focus on explaining your experiences clearly
-            and confidently.
+            dynamically based on your uploaded resume and job description,
+            creating a personalized interview experience. Focus on explaining
+            your experiences clearly and confidently.
           </p>
         </div>
 
@@ -185,15 +189,27 @@ const ResumeUploadSection: React.FC<ResumeUploadSectionProps> = ({
             onChange={handleFileChange}
             className="hidden"
           />
+        </div>
 
-          {uploadedFile && (
-            <button
-              onClick={onStartInterview}
-              className="w-full mt-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all"
-            >
-              Start Interview 🚀
-            </button>
-          )}
+        {/* Job Description Section */}
+        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+          <h3 className="text-lg font-medium text-gray-800 mb-3">
+            Job Description (Optional)
+          </h3>
+          <p className="text-gray-500 text-sm mb-4">
+            Paste the job description to get interview questions tailored to the
+            specific role.
+          </p>
+          <textarea
+            value={jobDescription}
+            onChange={(e) => onJobDescriptionChange(e.target.value)}
+            placeholder="Paste the job description here... Include responsibilities, requirements, and skills."
+            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+            rows={6}
+          />
+          <p className="text-gray-400 text-xs mt-2">
+            {jobDescription.length > 0 && `${jobDescription.length} characters`}
+          </p>
         </div>
 
         {/* Tips Section */}
@@ -233,6 +249,16 @@ const ResumeUploadSection: React.FC<ResumeUploadSectionProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Start Button */}
+        {uploadedFile && (
+          <button
+            onClick={onStartInterview}
+            className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all"
+          >
+            Start Interview 🚀
+          </button>
+        )}
       </div>
     </div>
   );
@@ -248,9 +274,18 @@ const InterviewChat: React.FC = () => {
   const [feedback, setFeedback] = useState<FeedbackData | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [jobDescription, setJobDescription] = useState<string>("");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -265,8 +300,7 @@ const InterviewChat: React.FC = () => {
   const addMessage = (
     type: "user" | "assistant" | "system",
     content: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    metadata?: any
+    metadata?: Record<string, unknown>
   ) => {
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -283,16 +317,23 @@ const InterviewChat: React.FC = () => {
     message?: string
   ): Promise<ChatResponse | null> => {
     try {
+      const body: Record<string, unknown> = {
+        action,
+        message,
+        question_number: currentQuestionNumber,
+      };
+
+      // Include job_description when starting the interview
+      if (action === "start") {
+        body.job_description = jobDescription;
+      }
+
       const response = await authFetch(`${getBaseUrl()}/api/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          action,
-          message,
-          question_number: currentQuestionNumber,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -381,11 +422,15 @@ const InterviewChat: React.FC = () => {
     setIsLoading(false);
   };
 
-  const skipQuestion = async () => {
+  const skipQuestion = async (action: string) => {
     setIsLoading(true);
-    addMessage("system", "Skipping to next question...");
+    const message =
+      action === "skip"
+        ? "⏭️ Skipping to next question..."
+        : "⏱️ No answer provided.";
+    addMessage("system", message);
 
-    const response = await sendRequest("skip");
+    const response = await sendRequest(action);
 
     if (response && response.question) {
       setCurrentQuestionNumber(
@@ -396,6 +441,7 @@ const InterviewChat: React.FC = () => {
         question_type: response.question_type,
         reasoning: response.reasoning,
       });
+      // resetTimer();
     }
 
     setIsLoading(false);
@@ -410,6 +456,7 @@ const InterviewChat: React.FC = () => {
     setCurrentQuestionNumber(0);
     setInterviewStarted(false);
     setUploadedFile(null);
+    setJobDescription("");
 
     setIsLoading(false);
   };
@@ -428,6 +475,8 @@ const InterviewChat: React.FC = () => {
         onStartInterview={startInterview}
         uploadedFile={uploadedFile}
         onFileUpload={setUploadedFile}
+        jobDescription={jobDescription}
+        onJobDescriptionChange={setJobDescription}
       />
     );
   }
@@ -440,9 +489,11 @@ const InterviewChat: React.FC = () => {
           Mocky - Your Interview Assistant
         </h1>
         <div className="flex gap-4 items-center">
-          <span className="bg-indigo-500 text-white px-4 py-2 rounded-full font-semibold text-sm">
-            Question {currentQuestionNumber}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="bg-indigo-500 text-white px-4 py-2 rounded-full font-semibold text-sm">
+              Question {currentQuestionNumber}
+            </span>
+          </div>
           {!interviewComplete && (
             <button
               className="bg-white text-indigo-500 px-4 py-2 rounded-lg border-2 border-indigo-500 text-sm font-semibold hover:bg-indigo-500 hover:text-white transition-colors disabled:opacity-50"
@@ -651,7 +702,7 @@ const InterviewChat: React.FC = () => {
           <div className="flex flex-col gap-2">
             <button
               className="bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold border border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-50"
-              onClick={skipQuestion}
+              onClick={() => skipQuestion("skip")}
               disabled={isLoading}
               title="Skip to next question"
             >
@@ -663,7 +714,10 @@ const InterviewChat: React.FC = () => {
             className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 text-base resize-none focus:outline-none focus:border-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
             placeholder="Type your answer here... (Press Enter to send, Shift+Enter for new line)"
             value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
+            onChange={(e) => {
+              setInputMessage(e.target.value);
+              // resetTimer();
+            }}
             onKeyPress={handleKeyPress}
             disabled={isLoading}
             rows={3}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Features from "../components/Features";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -49,43 +50,26 @@ export default function ProfilePage() {
 
             {/* Features Preview */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-xl border border-indigo-100">
-                <div className="text-3xl mb-2">✏️</div>
-                <h3 className="font-semibold text-gray-800 mb-1">
-                  Edit Profile
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Update your personal information
-                </p>
-              </div>
-
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-100">
-                <div className="text-3xl mb-2">🎯</div>
-                <h3 className="font-semibold text-gray-800 mb-1">
-                  Career Goals
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Set and track your objectives
-                </p>
-              </div>
-
-              <div className="bg-gradient-to-br from-pink-50 to-indigo-50 p-4 rounded-xl border border-pink-100">
-                <div className="text-3xl mb-2">📄</div>
-                <h3 className="font-semibold text-gray-800 mb-1">
-                  Resume Management
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Upload and manage resumes
-                </p>
-              </div>
-
-              <div className="bg-gradient-to-br from-indigo-50 to-pink-50 p-4 rounded-xl border border-indigo-100">
-                <div className="text-3xl mb-2">🏆</div>
-                <h3 className="font-semibold text-gray-800 mb-1">
-                  Achievements
-                </h3>
-                <p className="text-sm text-gray-600">View your milestones</p>
-              </div>
+              <Features
+                icon="✏️"
+                title="Edit Profile"
+                subtitle="Update your personal information"
+              />
+              <Features
+                icon="🎯"
+                title="Career Goals"
+                subtitle="Set and track your objectives"
+              />
+              <Features
+                icon="📄"
+                title="Resume Management"
+                subtitle="Upload and manage resumes"
+              />
+              <Features
+                icon="🏆"
+                title="Achievements"
+                subtitle="Set and track your objectives"
+              />
             </div>
 
             {/* CTA */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Features from "../components/Features";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -53,41 +54,29 @@ export default function SettingsPage() {
 
             {/* Features Preview */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-xl border border-indigo-100">
-                <div className="text-3xl mb-2">🔔</div>
-                <h3 className="font-semibold text-gray-800 mb-1">
-                  Notifications
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Manage alerts and reminders
-                </p>
-              </div>
+              <Features
+                icon="🔔"
+                title="Notifications"
+                subtitle="Manage alerts and reminders"
+              />
 
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-100">
-                <div className="text-3xl mb-2">🎨</div>
-                <h3 className="font-semibold text-gray-800 mb-1">Appearance</h3>
-                <p className="text-sm text-gray-600">
-                  Customize themes and colors
-                </p>
-              </div>
+              <Features
+                icon="🎨"
+                title="Appearance"
+                subtitle="Customize themes and colors"
+              />
 
-              <div className="bg-gradient-to-br from-pink-50 to-indigo-50 p-4 rounded-xl border border-pink-100">
-                <div className="text-3xl mb-2">🔒</div>
-                <h3 className="font-semibold text-gray-800 mb-1">
-                  Privacy & Security
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Control your data and privacy
-                </p>
-              </div>
+              <Features
+                icon="🔒"
+                title="Privacy & Security"
+                subtitle="Control your data and privacy"
+              />
 
-              <div className="bg-gradient-to-br from-indigo-50 to-pink-50 p-4 rounded-xl border border-indigo-100">
-                <div className="text-3xl mb-2">🌐</div>
-                <h3 className="font-semibold text-gray-800 mb-1">
-                  Language & Region
-                </h3>
-                <p className="text-sm text-gray-600">Set your preferences</p>
-              </div>
+              <Features
+                icon="🌐"
+                title="Language & Region"
+                subtitle="Set your preferences"
+              />
             </div>
 
             {/* CTA */}
