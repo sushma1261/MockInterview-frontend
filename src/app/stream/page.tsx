@@ -308,7 +308,7 @@ export function AdvancedStreamingExample() {
   const [chunks, setChunks] = useState<unknown[]>([]);
 
   const handleStreamingChat = async () => {
-    const response = await authFetch("/api/chat/stream", {
+    const response = await authFetch(`${getBaseUrl()}/api/chat/stream`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

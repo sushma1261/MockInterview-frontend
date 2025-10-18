@@ -7,9 +7,13 @@ import FeedbackPanel from "@/components/chat/FeedbackPanel";
 import LoadingIndicator from "@/components/chat/LoadingIndicator";
 import ResumeUploadSection from "@/components/chat/ResumeUploadSection";
 import { useInterviewChat } from "@/hooks/useInterviewChat";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect, useRef } from "react";
 
 const InterviewChat: React.FC = () => {
+  const searchParams = useSearchParams();
+  const resumeId = searchParams.get("resumeId");
+
   const {
     messages,
     inputMessage,
@@ -30,7 +34,7 @@ const InterviewChat: React.FC = () => {
     requestFeedback,
     skipQuestion,
     restartInterview,
-  } = useInterviewChat();
+  } = useInterviewChat({ resumeId });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -47,6 +51,7 @@ const InterviewChat: React.FC = () => {
         onFileUpload={setUploadedFile}
         jobDescription={jobDescription}
         onJobDescriptionChange={setJobDescription}
+        resumeId={resumeId}
       />
     );
   }

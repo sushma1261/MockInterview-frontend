@@ -1,6 +1,7 @@
 "use client";
 import FeedbackCard from "@/components/Feedback";
 import { authFetch } from "@/lib/api";
+import { getBaseUrl } from "@/lib/utils";
 import { useState } from "react";
 
 interface Message {
@@ -22,7 +23,7 @@ const Chat = () => {
     setLoading(true);
 
     try {
-      const response = await authFetch("/api/answer", {
+      const response = await authFetch(`${getBaseUrl()}/api/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answer: input }),

@@ -10,6 +10,7 @@ interface ResumeUploadSectionProps {
   onFileUpload: (file: File) => void;
   jobDescription: string;
   onJobDescriptionChange: (description: string) => void;
+  resumeId?: string | null;
 }
 
 export default function ResumeUploadSection({
@@ -18,6 +19,7 @@ export default function ResumeUploadSection({
   onFileUpload,
   jobDescription,
   onJobDescriptionChange,
+  resumeId,
 }: ResumeUploadSectionProps) {
   const [resumeUploadLoader, setResumeUploadLoader] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -97,7 +99,21 @@ export default function ResumeUploadSection({
             interview questions.
           </p>
 
-          {!uploadedFile ? (
+          {/* Show notice if resume is pre-selected from profile */}
+          {resumeId && (
+            <div className="mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+              <p className="text-indigo-700 text-sm flex items-center gap-2">
+                <span className="text-xl">✓</span>
+                <span>
+                  <strong>Resume Selected:</strong> Using resume from your
+                  profile (ID: {resumeId}). You can skip uploading and start the
+                  interview directly.
+                </span>
+              </p>
+            </div>
+          )}
+
+          {!uploadedFile && !resumeId ? (
             <div
               onClick={handleFileUploadClick}
               className="border-2 border-dashed border-gray-300 rounded-xl p-12 cursor-pointer hover:bg-gray-50 hover:border-indigo-400 transition text-center"
@@ -122,7 +138,7 @@ export default function ResumeUploadSection({
                 </>
               )}
             </div>
-          ) : (
+          ) : uploadedFile ? (
             <div className="border-2 border-green-300 bg-green-50 rounded-xl p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -144,7 +160,7 @@ export default function ResumeUploadSection({
                 </button>
               </div>
             </div>
-          )}
+          ) : null}
 
           <input
             type="file"
@@ -215,7 +231,7 @@ export default function ResumeUploadSection({
         </div>
 
         {/* Start Button */}
-        {uploadedFile && (
+        {(uploadedFile || resumeId) && (
           <button
             onClick={onStartInterview}
             className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all"

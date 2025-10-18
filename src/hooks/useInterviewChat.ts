@@ -3,7 +3,12 @@ import { getBaseUrl } from "@/lib/utils";
 import { ChatResponse, FeedbackData, Message } from "@/types/chat";
 import { useState } from "react";
 
-export function useInterviewChat() {
+interface UseInterviewChatProps {
+  resumeId?: string | null;
+}
+
+export function useInterviewChat(props?: UseInterviewChatProps) {
+  const { resumeId } = props || {};
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +49,11 @@ export function useInterviewChat() {
       // Include job_description when starting the interview
       if (action === "start") {
         body.job_description = jobDescription;
+
+        // Include resume_id if provided (from profile page)
+        if (resumeId) {
+          body.resume_id = parseInt(resumeId, 10);
+        }
       }
 
       const response = await authFetch(`${getBaseUrl()}/api/chat`, {
