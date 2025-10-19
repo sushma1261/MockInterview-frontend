@@ -1,5 +1,7 @@
+import { ThemeProvider } from "@/app/utils/ThemeContext";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import SidebarLayout from "@/components/SidebarLayout";
 import { AuthProvider } from "@/lib/AuthContext";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -31,10 +33,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <Navbar />
-
-          {children}
-          {process.env.NODE_ENV === "production" && <Footer />}
+          <ThemeProvider>
+            <Navbar />
+            <SidebarLayout>{children}</SidebarLayout>
+            {process.env.NODE_ENV === "production" && <Footer />}
+            {/* {process.env.NODE_ENV === "development" && <Footer />} */}
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

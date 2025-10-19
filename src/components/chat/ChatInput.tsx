@@ -1,3 +1,6 @@
+"use client";
+
+import { useTheme } from "@/app/utils/ThemeContext";
 import React, { useRef } from "react";
 
 interface ChatInputProps {
@@ -17,7 +20,15 @@ export default function ChatInput({
   isLoading,
   disabled = false,
 }: ChatInputProps) {
+  const { theme } = useTheme();
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const bgInput =
+    theme === "dark"
+      ? "bg-gray-800 border-gray-700"
+      : "bg-white border-gray-200";
+  const inputBorder = theme === "dark" ? "border-gray-600" : "border-gray-300";
+  const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-800";
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -27,11 +38,17 @@ export default function ChatInput({
   };
 
   return (
-    <div className="bg-white px-8 py-4 shadow-lg flex gap-4 items-end">
+    <div
+      className={`${bgInput} border-t px-8 py-4 shadow-sm flex gap-4 items-end transition-colors`}
+    >
       {/* Skip Button */}
       <div className="flex flex-col gap-2">
         <button
-          className="bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold border border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-50"
+          className={`${
+            theme === "dark"
+              ? "bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600"
+              : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+          } px-4 py-2 rounded-lg text-sm font-semibold border transition-colors disabled:opacity-50`}
           onClick={onSkip}
           disabled={isLoading || disabled}
           title="Skip to next question"
@@ -43,7 +60,9 @@ export default function ChatInput({
       {/* Text Input */}
       <textarea
         ref={inputRef}
-        className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 text-base resize-none focus:outline-none focus:border-indigo-500 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+        className={`flex-1 border-2 ${inputBorder} ${
+          theme === "dark" ? "bg-gray-700" : "bg-white"
+        } ${textPrimary} rounded-xl px-4 py-3 text-base resize-none focus:outline-none focus:border-indigo-600 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors`}
         placeholder="Type your answer here... (Press Enter to send, Shift+Enter for new line)"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -54,7 +73,7 @@ export default function ChatInput({
 
       {/* Send Button */}
       <button
-        className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+        className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={onSend}
         disabled={isLoading || !value.trim() || disabled}
       >

@@ -182,7 +182,7 @@ export default function PreferencesForm({
       </div>
 
       {/* Notifications */}
-      <div className="flex items-center gap-3">
+      {/* <div className="flex items-center gap-3">
         <input
           type="checkbox"
           id="notifications"
@@ -201,7 +201,7 @@ export default function PreferencesForm({
         >
           Enable Notifications
         </label>
-      </div>
+      </div> */}
 
       {/* Submit Button */}
       <div className="pt-4">

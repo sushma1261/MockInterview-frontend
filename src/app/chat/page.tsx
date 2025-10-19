@@ -1,5 +1,6 @@
 "use client";
 
+import { useTheme } from "@/app/utils/ThemeContext";
 import ChatHeader from "@/components/chat/ChatHeader";
 import ChatInput from "@/components/chat/ChatInput";
 import ChatMessage from "@/components/chat/ChatMessage";
@@ -11,6 +12,7 @@ import { useSearchParams } from "next/navigation";
 import React, { useEffect, useRef } from "react";
 
 const InterviewChat: React.FC = () => {
+  const { theme } = useTheme();
   const searchParams = useSearchParams();
   const resumeId = searchParams.get("resumeId");
 
@@ -42,6 +44,12 @@ const InterviewChat: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const bgMain = theme === "dark" ? "bg-gray-900" : "bg-gray-100";
+  const bgChat =
+    theme === "dark"
+      ? "bg-gray-800 border-gray-700"
+      : "bg-white border-gray-200";
+
   // Show resume upload screen if interview hasn't started
   if (!interviewStarted) {
     return (
@@ -57,7 +65,9 @@ const InterviewChat: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-purple-700 font-sans">
+    <div
+      className={`flex flex-col h-screen ${bgMain} font-sans transition-colors`}
+    >
       {/* Header */}
       <ChatHeader
         currentQuestionNumber={currentQuestionNumber}
@@ -70,7 +80,9 @@ const InterviewChat: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 flex gap-4 p-4 overflow-hidden">
         {/* Chat Area */}
-        <div className="flex-1 bg-white rounded-xl shadow-xl overflow-hidden flex flex-col">
+        <div
+          className={`flex-1 ${bgChat} rounded-xl border shadow-sm overflow-hidden flex flex-col`}
+        >
           <div className="flex-1 overflow-y-auto p-8 scroll-smooth">
             {messages.map((message) => (
               <ChatMessage key={message.id} message={message} />
@@ -102,19 +114,6 @@ const InterviewChat: React.FC = () => {
           isLoading={isLoading}
         />
       )}
-
-      <style jsx>{`
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   );
 };

@@ -1,3 +1,6 @@
+"use client";
+
+import { useTheme } from "@/app/utils/ThemeContext";
 import { Message } from "@/types/chat";
 
 interface ChatMessageProps {
@@ -5,6 +8,18 @@ interface ChatMessageProps {
 }
 
 export default function ChatMessage({ message }: ChatMessageProps) {
+  const { theme } = useTheme();
+
+  const userBg = "bg-indigo-600 text-white";
+  const assistantBg =
+    theme === "dark"
+      ? "bg-gray-700 text-gray-100"
+      : "bg-gray-100 text-gray-800";
+  const systemBg =
+    theme === "dark"
+      ? "bg-amber-900/30 text-amber-300"
+      : "bg-amber-50 text-amber-900";
+
   return (
     <div
       className={`flex gap-4 mb-6 animate-[slideIn_0.3s_ease-out] ${
@@ -22,20 +37,26 @@ export default function ChatMessage({ message }: ChatMessageProps) {
       <div
         className={`max-w-[70%] px-5 py-4 shadow-sm ${
           message.type === "user"
-            ? "bg-indigo-500 text-white rounded-[18px_18px_4px_18px]"
+            ? `${userBg} rounded-[18px_18px_4px_18px]`
             : message.type === "assistant"
-            ? "bg-gray-50 rounded-[18px_18px_18px_4px]"
-            : "bg-amber-50 rounded-xl italic"
+            ? `${assistantBg} rounded-[18px_18px_18px_4px]`
+            : `${systemBg} rounded-xl italic`
         }`}
       >
         {/* Question Badges */}
         {message.metadata?.question_number && (
           <div className="flex gap-2 mb-2">
-            <span className="inline-block bg-indigo-500 text-white px-3 py-1 rounded-xl text-xs font-semibold">
+            <span className="inline-block bg-indigo-600 text-white px-3 py-1 rounded-xl text-xs font-semibold">
               Q{message.metadata.question_number}
             </span>
             {message.metadata.question_type && (
-              <span className="inline-block bg-gray-200 text-gray-700 px-3 py-1 rounded-xl text-xs font-semibold capitalize">
+              <span
+                className={`inline-block ${
+                  theme === "dark"
+                    ? "bg-gray-600 text-gray-200"
+                    : "bg-gray-200 text-gray-700"
+                } px-3 py-1 rounded-xl text-xs font-semibold capitalize`}
+              >
                 {message.metadata.question_type}
               </span>
             )}
@@ -47,13 +68,27 @@ export default function ChatMessage({ message }: ChatMessageProps) {
 
         {/* Reasoning */}
         {message.metadata?.reasoning && (
-          <div className="mt-3 p-3 bg-indigo-50 rounded-lg text-sm text-gray-700">
+          <div
+            className={`mt-3 p-3 ${
+              theme === "dark"
+                ? "bg-indigo-900/30 text-gray-300"
+                : "bg-indigo-50 text-gray-700"
+            } rounded-lg text-sm`}
+          >
             💡 {message.metadata.reasoning}
           </div>
         )}
 
         {/* Timestamp */}
-        <div className="mt-2 text-xs text-gray-400">
+        <div
+          className={`mt-2 text-xs ${
+            message.type === "user"
+              ? "text-white/60"
+              : theme === "dark"
+              ? "text-gray-500"
+              : "text-gray-400"
+          }`}
+        >
           {message.timestamp.toLocaleTimeString()}
         </div>
       </div>

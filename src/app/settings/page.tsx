@@ -1,20 +1,37 @@
 "use client";
 
-import Features from "@/components/Features";
+import { useTheme } from "@/app/utils/ThemeContext";
 import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
+  const { theme } = useTheme();
   const router = useRouter();
 
+  const bgMain = theme === "dark" ? "bg-gray-900" : "bg-gray-100";
+  const bgCard =
+    theme === "dark"
+      ? "bg-gray-800 border-gray-700"
+      : "bg-white border-gray-200";
+  const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-800";
+  const textSecondary = theme === "dark" ? "text-gray-400" : "text-gray-600";
+  const featureBg = theme === "dark" ? "bg-gray-700/50" : "bg-gray-50";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-6">
-      <div className="max-w-2xl w-full">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-8 text-center">
-            <div className="inline-block p-4 bg-white/20 backdrop-blur-sm rounded-2xl mb-4">
+    <div className={`min-h-screen ${bgMain} p-6 transition-colors`}>
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className={`text-3xl font-bold ${textPrimary} mb-2`}>Settings</h1>
+          <p className={`${textSecondary}`}>Customize your experience</p>
+        </div>
+
+        {/* Main Content Card */}
+        <div className={`rounded-xl border ${bgCard} p-8`}>
+          {/* Coming Soon Message */}
+          <div className="text-center py-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-900/30 mb-6">
               <svg
-                className="w-16 h-16 text-white animate-spin-slow"
+                className="w-10 h-10 text-indigo-600 dark:text-indigo-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -33,116 +50,108 @@ export default function SettingsPage() {
                 />
               </svg>
             </div>
-            <h1 className="text-4xl font-bold text-white mb-2">Settings</h1>
-            <p className="text-white/90 text-lg">Customize your experience</p>
-          </div>
+            <h2 className={`text-2xl font-bold ${textPrimary} mb-3`}>
+              Coming Soon
+            </h2>
+            <p className={`${textSecondary} max-w-md mx-auto mb-8`}>
+              We&apos;re creating a powerful settings panel to give you complete
+              control over your iHyre experience.
+            </p>
 
-          {/* Content */}
-          <div className="p-8 text-center">
-            <div className="mb-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 mb-4">
-                <span className="text-4xl">⚙️</span>
+            {/* Features Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 max-w-2xl mx-auto">
+              <div className={`${featureBg} rounded-lg p-4 text-left`}>
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🔔</span>
+                  <div>
+                    <h3 className={`font-semibold ${textPrimary} mb-1`}>
+                      Notifications
+                    </h3>
+                    <p className={`text-sm ${textSecondary}`}>
+                      Manage alerts and reminders
+                    </p>
+                  </div>
+                </div>
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-3">
-                Coming Soon!
-              </h2>
-              <p className="text-gray-600 leading-relaxed max-w-md mx-auto">
-                We&apos;re creating a powerful settings panel to give you
-                complete control over your MockItUp experience.
-              </p>
+
+              <div className={`${featureBg} rounded-lg p-4 text-left`}>
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🎨</span>
+                  <div>
+                    <h3 className={`font-semibold ${textPrimary} mb-1`}>
+                      Appearance
+                    </h3>
+                    <p className={`text-sm ${textSecondary}`}>
+                      Customize themes and colors
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`${featureBg} rounded-lg p-4 text-left`}>
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🔒</span>
+                  <div>
+                    <h3 className={`font-semibold ${textPrimary} mb-1`}>
+                      Privacy & Security
+                    </h3>
+                    <p className={`text-sm ${textSecondary}`}>
+                      Control your data and privacy
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`${featureBg} rounded-lg p-4 text-left`}>
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🌐</span>
+                  <div>
+                    <h3 className={`font-semibold ${textPrimary} mb-1`}>
+                      Language & Region
+                    </h3>
+                    <p className={`text-sm ${textSecondary}`}>
+                      Set your preferences
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Features Preview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <Features
-                icon="🔔"
-                title="Notifications"
-                subtitle="Manage alerts and reminders"
-              />
-
-              <Features
-                icon="🎨"
-                title="Appearance"
-                subtitle="Customize themes and colors"
-              />
-
-              <Features
-                icon="🔒"
-                title="Privacy & Security"
-                subtitle="Control your data and privacy"
-              />
-
-              <Features
-                icon="🌐"
-                title="Language & Region"
-                subtitle="Set your preferences"
-              />
-            </div>
-
-            {/* CTA */}
+            {/* CTA Button */}
             <button
               onClick={() => router.push("/chat")}
-              className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 mx-auto"
+              className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
               Start Practicing
             </button>
           </div>
         </div>
 
         {/* Info Banner */}
-        <div className="mt-6 bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white/80 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0">
-              <svg
-                className="w-6 h-6 text-indigo-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm text-gray-700">
-                <span className="font-semibold">Your feedback matters!</span>{" "}
-                Let us know what settings you&apos;d like to see. 💡
-              </p>
-            </div>
-          </div>
+        <div
+          className={`mt-6 rounded-lg border ${bgCard} p-4 flex items-start gap-3`}
+        >
+          <svg
+            className="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p className={`text-sm ${textSecondary}`}>
+            <span className={`font-semibold ${textPrimary}`}>
+              Your feedback matters!
+            </span>{" "}
+            Let us know what settings you&apos;d like to see.
+          </p>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes spin-slow {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-        .animate-spin-slow {
-          animation: spin-slow 3s linear infinite;
-        }
-      `}</style>
     </div>
   );
 }
