@@ -1,7 +1,9 @@
+import { NotificationProvider } from "@/app/utils/NotificationContext";
 import { ThemeProvider } from "@/app/utils/ThemeContext";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import SidebarLayout from "@/components/SidebarLayout";
+import NotificationStrip from "@/components/NotificationStrip";
+import SidebarLayout, { SidebarProvider } from "@/components/SidebarLayout";
 import { AuthProvider } from "@/lib/AuthContext";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -34,10 +36,15 @@ export default function RootLayout({
       >
         <AuthProvider>
           <ThemeProvider>
-            <Navbar />
-            <SidebarLayout>{children}</SidebarLayout>
-            {process.env.NODE_ENV === "production" && <Footer />}
-            {/* {process.env.NODE_ENV === "development" && <Footer />} */}
+            <NotificationProvider>
+              <SidebarProvider>
+                <Navbar />
+                <NotificationStrip />
+                <SidebarLayout>{children}</SidebarLayout>
+                {process.env.NODE_ENV === "production" && <Footer />}
+                {/* {process.env.NODE_ENV === "development" && <Footer />} */}
+              </SidebarProvider>
+            </NotificationProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>

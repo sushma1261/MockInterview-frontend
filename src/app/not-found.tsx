@@ -11,7 +11,7 @@ export default function NotFound() {
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          router.push("/chat");
+          router.push("/");
           return 0;
         }
         return prev - 1;

@@ -1,14 +1,16 @@
 import { authFetch } from "@/lib/api";
+import { historyApi } from "@/lib/historyApi";
 import { getBaseUrl } from "@/lib/utils";
 import { ChatResponse, FeedbackData, Message } from "@/types/chat";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface UseInterviewChatProps {
   resumeId?: string | null;
+  sessionId?: string | null;
 }
 
 export function useInterviewChat(props?: UseInterviewChatProps) {
-  const { resumeId } = props || {};
+  const { resumeId, sessionId } = props || {};
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +21,49 @@ export function useInterviewChat(props?: UseInterviewChatProps) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState<string>("");
+
+  // Load session messages if sessionId is provided
+  useEffect(() => {
+    if (sessionId) {
+      loadSessionMessages();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
+
+  const loadSessionMessages = async () => {
+    if (!sessionId) return;
+
+    try {
+      const response = await historyApi.getSessionDetail(parseInt(sessionId));
+
+      // Convert session messages to chat messages
+      const loadedMessages: Message[] = response.messages.map((msg) => ({
+        id: msg.id.toString(),
+        type: msg.role as "user" | "assistant" | "system",
+        content: msg.content,
+        timestamp: new Date(msg.created_at),
+        metadata: {
+          question_number: msg.question_number || undefined,
+          question_type: msg.question_type || undefined,
+          message_type: msg.message_type,
+        },
+      }));
+
+      setMessages(loadedMessages);
+      setInterviewStarted(true);
+
+      // Set current question number from session data
+      const lastQuestion = response.messages
+        .filter((m) => m.question_number)
+        .sort((a, b) => (b.question_number || 0) - (a.question_number || 0))[0];
+
+      if (lastQuestion?.question_number) {
+        setCurrentQuestionNumber(lastQuestion.question_number);
+      }
+    } catch (error) {
+      console.error("Error loading session messages:", error);
+    }
+  };
 
   const addMessage = (
     type: "user" | "assistant" | "system",
@@ -200,6 +245,10 @@ export function useInterviewChat(props?: UseInterviewChatProps) {
     setShowFeedback,
     setUploadedFile,
     setJobDescription,
+    setMessages,
+    setInterviewStarted,
+    setCurrentQuestionNumber,
+    setInterviewComplete,
 
     // Actions
     startInterview,

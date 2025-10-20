@@ -18,11 +18,21 @@ export function useSidebar() {
   return context;
 }
 
-export default function SidebarLayout({ children }: { children: ReactNode }) {
+export function SidebarProvider({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+}
+
+export default function SidebarLayout({ children }: { children: ReactNode }) {
+  const { collapsed } = useSidebar();
+
+  return (
+    <>
       <Sidebar />
       <div
         className={`transition-all duration-300 ${
@@ -31,6 +41,6 @@ export default function SidebarLayout({ children }: { children: ReactNode }) {
       >
         {children}
       </div>
-    </SidebarContext.Provider>
+    </>
   );
 }

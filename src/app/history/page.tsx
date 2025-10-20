@@ -1,11 +1,25 @@
 "use client";
 
+import { useNotification } from "@/app/utils/NotificationContext";
 import { useTheme } from "@/app/utils/ThemeContext";
-import { useRouter } from "next/navigation";
+import SessionCard from "@/components/history/SessionCard";
+import SessionStats from "@/components/history/SessionStats";
+import { useAuth } from "@/lib/AuthContext";
+import { historyApi, InterviewSession, UserStats } from "@/lib/historyApi";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function HistoryPage() {
   const { theme } = useTheme();
-  const router = useRouter();
+  const { showError } = useNotification();
+  const { user, loading: authLoading } = useAuth();
+  const [sessions, setSessions] = useState<InterviewSession[]>([]);
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "completed" | "in_progress">(
+    "all"
+  );
 
   const bgMain = theme === "dark" ? "bg-gray-900" : "bg-gray-100";
   const bgCard =
@@ -14,141 +28,178 @@ export default function HistoryPage() {
       : "bg-white border-gray-200";
   const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-800";
   const textSecondary = theme === "dark" ? "text-gray-400" : "text-gray-600";
-  const featureBg = theme === "dark" ? "bg-gray-700/50" : "bg-gray-50";
+
+  useEffect(() => {
+    // Only load data if auth has finished loading and user is logged in
+    if (!authLoading && user) {
+      loadSessions();
+      loadStats();
+    } else if (!authLoading && !user) {
+      // Auth finished loading but no user - stop loading states
+      setLoading(false);
+      setStatsLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, authLoading, user]);
+
+  const loadSessions = async () => {
+    try {
+      setLoading(true);
+      const response = await historyApi.getSessions(
+        filter !== "all"
+          ? { status: filter as "completed" | "in_progress" }
+          : undefined
+      );
+      setSessions(response.sessions);
+    } catch (err) {
+      console.error("Error loading sessions:", err);
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to load interview history. Please try again.";
+      showError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      setStatsLoading(true);
+      const response = await historyApi.getStats();
+      setStats(response.stats);
+    } catch (err) {
+      console.error("Error loading stats:", err);
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to load statistics. Please try again.";
+      showError(errorMessage);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const getFilterButtonClass = (filterValue: string) => {
+    const isActive = filter === filterValue;
+    return `px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+      isActive
+        ? "bg-indigo-600 text-white"
+        : theme === "dark"
+        ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
+        : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+    }`;
+  };
 
   return (
-    <div className={`min-h-screen ${bgMain} p-6 transition-colors`}>
-      <div className="max-w-4xl mx-auto">
+    <div className={`min-h-screen ${bgMain} transition-colors`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-8">
           <h1 className={`text-3xl font-bold ${textPrimary} mb-2`}>
             Interview History
           </h1>
-          <p className={`${textSecondary}`}>
-            Track your progress and review past sessions
+          <p className={textSecondary}>
+            Track your progress and review past interview sessions
           </p>
         </div>
 
-        {/* Main Content Card */}
-        <div className={`rounded-xl border ${bgCard} p-8`}>
-          {/* Coming Soon Message */}
-          <div className="text-center py-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-900/30 mb-6">
-              <svg
-                className="w-10 h-10 text-indigo-600 dark:text-indigo-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <h2 className={`text-2xl font-bold ${textPrimary} mb-3`}>
-              Coming Soon
-            </h2>
-            <p className={`${textSecondary} max-w-md mx-auto mb-8`}>
-              We&apos;re building an amazing feature to help you track all your
-              interview sessions, review your performance, and monitor your
-              progress over time.
+        {/* Auth Required Message */}
+        {!authLoading && !user ? (
+          <div className={`${bgCard} border rounded-xl p-12 text-center`}>
+            <span className="text-6xl block mb-4">🔒</span>
+            <h3 className={`text-xl font-semibold ${textPrimary} mb-2`}>
+              Authentication Required
+            </h3>
+            <p className={`${textSecondary} mb-6`}>
+              Please log in to view your interview history
             </p>
-
-            {/* Features Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 max-w-2xl mx-auto">
-              <div className={`${featureBg} rounded-lg p-4 text-left`}>
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">�</span>
-                  <div>
-                    <h3 className={`font-semibold ${textPrimary} mb-1`}>
-                      Performance Analytics
-                    </h3>
-                    <p className={`text-sm ${textSecondary}`}>
-                      Track your scores and improvements
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`${featureBg} rounded-lg p-4 text-left`}>
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🎯</span>
-                  <div>
-                    <h3 className={`font-semibold ${textPrimary} mb-1`}>
-                      Past Sessions
-                    </h3>
-                    <p className={`text-sm ${textSecondary}`}>
-                      Review questions and answers
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`${featureBg} rounded-lg p-4 text-left`}>
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">📈</span>
-                  <div>
-                    <h3 className={`font-semibold ${textPrimary} mb-1`}>
-                      Progress Tracking
-                    </h3>
-                    <p className={`text-sm ${textSecondary}`}>
-                      See how you&apos;re improving
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`${featureBg} rounded-lg p-4 text-left`}>
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">💡</span>
-                  <div>
-                    <h3 className={`font-semibold ${textPrimary} mb-1`}>
-                      Insights & Tips
-                    </h3>
-                    <p className={`text-sm ${textSecondary}`}>
-                      Get personalized recommendations
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* CTA Button */}
-            <button
-              onClick={() => router.push("/chat")}
-              className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow"
+            <Link
+              href="/"
+              className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
             >
-              Start a New Interview
-            </button>
+              Go to Home
+            </Link>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Stats Section */}
+            {stats && <SessionStats stats={stats} loading={statsLoading} />}
 
-        {/* Info Banner */}
-        <div
-          className={`mt-6 rounded-lg border ${bgCard} p-4 flex items-start gap-3`}
-        >
-          <svg
-            className="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <p className={`text-sm ${textSecondary}`}>
-            <span className={`font-semibold ${textPrimary}`}>Stay tuned!</span>{" "}
-            We&apos;ll notify you when the History feature is ready. In the
-            meantime, keep practicing to improve your interview skills!
-          </p>
-        </div>
+            <div className="mt-8">
+              {/* Filter Tabs */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setFilter("all")}
+                    className={getFilterButtonClass("all")}
+                  >
+                    All Sessions
+                  </button>
+                  <button
+                    onClick={() => setFilter("completed")}
+                    className={getFilterButtonClass("completed")}
+                  >
+                    Completed
+                  </button>
+                  <button
+                    onClick={() => setFilter("in_progress")}
+                    className={getFilterButtonClass("in_progress")}
+                  >
+                    In Progress
+                  </button>
+                </div>
+                <span className={`text-sm ${textSecondary}`}>
+                  {sessions.length} session{sessions.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+
+              {/* Loading State */}
+              {loading ? (
+                <div className={`${bgCard} border rounded-xl p-12`}>
+                  <div className="flex flex-col items-center justify-center gap-3">
+                    <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p className={textSecondary}>
+                      Loading your interview history...
+                    </p>
+                  </div>
+                </div>
+              ) : sessions.length === 0 ? (
+                /* Empty State */
+                <div className={`${bgCard} border rounded-xl p-12 text-center`}>
+                  <span className="text-6xl block mb-4">📚</span>
+                  <h3 className={`text-xl font-semibold ${textPrimary} mb-2`}>
+                    {filter === "all"
+                      ? "No Interview Sessions Yet"
+                      : filter === "completed"
+                      ? "No Completed Sessions"
+                      : "No In-Progress Sessions"}
+                  </h3>
+                  <p className={`${textSecondary} mb-6`}>
+                    {filter === "all"
+                      ? "Start your first practice interview to see your history here"
+                      : filter === "completed"
+                      ? "Complete an interview session to see it here"
+                      : "Start a new interview to see in-progress sessions"}
+                  </p>
+                  <Link
+                    href="/chat"
+                    className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                  >
+                    Start Practice Interview
+                  </Link>
+                </div>
+              ) : (
+                /* Sessions Grid */
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {sessions.map((session) => (
+                    <SessionCard key={session.id} session={session} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
