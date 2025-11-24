@@ -240,7 +240,7 @@ export default function ResumeList({
               {/* Action Buttons */}
               <div className="flex gap-2">
                 <button
-                  onClick={() => handleStartInterview(resume.id)}
+                  onClick={() => router.push(`/resumes/${resume.id}`)}
                   disabled={loading === resume.id}
                   className="flex-1 px-3 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >

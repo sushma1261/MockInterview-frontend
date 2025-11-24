@@ -1,5 +1,6 @@
 "use client";
 
+import { useErrorHandler } from "@/app/utils/ErrorHandlerContext";
 import { useTheme } from "@/app/utils/ThemeContext";
 import ResumeList from "@/components/profile/ResumeList";
 import { useAuth } from "@/lib/AuthContext";
@@ -10,6 +11,7 @@ import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
   const { theme } = useTheme();
+  const { handleError } = useErrorHandler();
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [resumes, setResumes] = useState<Resume[]>([]);
@@ -25,6 +27,7 @@ export default function DashboardPage() {
     }
 
     loadResumes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading]);
 
   const loadResumes = async () => {
@@ -33,7 +36,7 @@ export default function DashboardPage() {
       const resumesData = await resumeApi.getResumes();
       setResumes(resumesData);
     } catch (error) {
-      console.error("Error loading resumes:", error);
+      handleError(error, "Failed to load resumes");
     } finally {
       setLoading(false);
     }

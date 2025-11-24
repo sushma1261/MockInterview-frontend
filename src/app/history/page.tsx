@@ -1,6 +1,6 @@
 "use client";
 
-import { useNotification } from "@/app/utils/NotificationContext";
+import { useErrorHandler } from "@/app/utils/ErrorHandlerContext";
 import { useTheme } from "@/app/utils/ThemeContext";
 import SessionCard from "@/components/history/SessionCard";
 import SessionStats from "@/components/history/SessionStats";
@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 
 export default function HistoryPage() {
   const { theme } = useTheme();
-  const { showError } = useNotification();
+  const { handleError } = useErrorHandler();
   const { user, loading: authLoading } = useAuth();
   const [sessions, setSessions] = useState<InterviewSession[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -52,12 +52,7 @@ export default function HistoryPage() {
       );
       setSessions(response.sessions);
     } catch (err) {
-      console.error("Error loading sessions:", err);
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Failed to load interview history. Please try again.";
-      showError(errorMessage);
+      handleError(err, "Failed to load interview history");
     } finally {
       setLoading(false);
     }
@@ -69,12 +64,7 @@ export default function HistoryPage() {
       const response = await historyApi.getStats();
       setStats(response.stats);
     } catch (err) {
-      console.error("Error loading stats:", err);
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Failed to load statistics. Please try again.";
-      showError(errorMessage);
+      handleError(err, "Failed to load statistics");
     } finally {
       setStatsLoading(false);
     }

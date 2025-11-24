@@ -1,4 +1,6 @@
+import { ErrorHandlerProvider } from "@/app/utils/ErrorHandlerContext";
 import { NotificationProvider } from "@/app/utils/NotificationContext";
+import { RoleProvider } from "@/app/utils/RoleContext";
 import { ThemeProvider } from "@/app/utils/ThemeContext";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -35,17 +37,21 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <ThemeProvider>
-            <NotificationProvider>
-              <SidebarProvider>
-                <Navbar />
-                <NotificationStrip />
-                <SidebarLayout>{children}</SidebarLayout>
-                {process.env.NODE_ENV === "production" && <Footer />}
-                {/* {process.env.NODE_ENV === "development" && <Footer />} */}
-              </SidebarProvider>
-            </NotificationProvider>
-          </ThemeProvider>
+          <RoleProvider>
+            <ThemeProvider>
+              <NotificationProvider>
+                <ErrorHandlerProvider>
+                  <SidebarProvider>
+                    <Navbar />
+                    <NotificationStrip />
+                    <SidebarLayout>{children}</SidebarLayout>
+                    {process.env.NODE_ENV === "production" && <Footer />}
+                    {/* {process.env.NODE_ENV === "development" && <Footer />} */}
+                  </SidebarProvider>
+                </ErrorHandlerProvider>
+              </NotificationProvider>
+            </ThemeProvider>
+          </RoleProvider>
         </AuthProvider>
       </body>
     </html>

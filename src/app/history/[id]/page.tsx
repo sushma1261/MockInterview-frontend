@@ -238,7 +238,11 @@ export default function SessionDetailPage() {
             <div>
               <p className={`text-xs ${textSecondary} mb-1`}>Feedback Items</p>
               <p className={`text-lg font-semibold ${textPrimary}`}>
-                {feedback.length}
+                {feedback.length > 0
+                  ? feedback.length
+                  : session.overall_feedback
+                  ? "Overall"
+                  : "0"}
               </p>
             </div>
             <div>
@@ -262,7 +266,12 @@ export default function SessionDetailPage() {
             onClick={() => setActiveTab("feedback")}
             className={getTabButtonClass("feedback")}
           >
-            📝 Feedback ({feedback.length})
+            📝 Feedback{" "}
+            {feedback.length > 0
+              ? `(${feedback.length})`
+              : session.overall_feedback
+              ? "(Available)"
+              : "(0)"}
           </button>
         </div>
 
@@ -271,7 +280,138 @@ export default function SessionDetailPage() {
           <ConversationView messages={messages} />
         ) : (
           <div className="space-y-4">
-            {feedback.length === 0 ? (
+            {/* Overall Feedback (if available) */}
+            {session.overall_feedback && (
+              <div className={`${bgCard} border rounded-xl p-6`}>
+                <h3
+                  className={`text-xl font-semibold ${textPrimary} mb-4 flex items-center gap-2`}
+                >
+                  <span>📊</span> Overall Interview Feedback
+                </h3>
+
+                {/* Confidence Score */}
+                {typeof session.overall_feedback.confidence_score ===
+                  "number" && (
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`text-sm font-medium ${textSecondary}`}>
+                        Confidence Score
+                      </span>
+                      <span className={`text-lg font-bold ${textPrimary}`}>
+                        {session.overall_feedback.confidence_score}/10
+                      </span>
+                    </div>
+                    <div
+                      className={`w-full h-3 rounded-full ${
+                        theme === "dark" ? "bg-gray-700" : "bg-gray-200"
+                      } overflow-hidden`}
+                    >
+                      <div
+                        className={`h-full transition-all ${
+                          session.overall_feedback.confidence_score >= 7
+                            ? "bg-green-500"
+                            : session.overall_feedback.confidence_score >= 5
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
+                        }`}
+                        style={{
+                          width: `${
+                            (session.overall_feedback.confidence_score / 10) *
+                            100
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Content Quality */}
+                {session.overall_feedback.content_quality && (
+                  <div className="mb-4">
+                    <h4 className={`text-sm font-semibold ${textPrimary} mb-2`}>
+                      Content Quality
+                    </h4>
+                    <p className={`${textSecondary} text-sm leading-relaxed`}>
+                      {session.overall_feedback.content_quality}
+                    </p>
+                  </div>
+                )}
+
+                {/* Grammar Assessment */}
+                {session.overall_feedback.grammar_assessment && (
+                  <div className="mb-4">
+                    <h4 className={`text-sm font-semibold ${textPrimary} mb-2`}>
+                      Grammar & Communication
+                    </h4>
+                    <p className={`${textSecondary} text-sm leading-relaxed`}>
+                      {session.overall_feedback.grammar_assessment}
+                    </p>
+                  </div>
+                )}
+
+                {/* Strengths */}
+                {session.overall_feedback.strengths &&
+                  session.overall_feedback.strengths.length > 0 && (
+                    <div className="mb-4">
+                      <h4
+                        className={`text-sm font-semibold ${textPrimary} mb-2 flex items-center gap-2`}
+                      >
+                        <span>💪</span> Strengths
+                      </h4>
+                      <ul
+                        className={`list-disc list-inside ${textSecondary} text-sm space-y-1`}
+                      >
+                        {session.overall_feedback.strengths.map(
+                          (strength, idx) => (
+                            <li key={idx}>{strength}</li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  )}
+
+                {/* Improvement Suggestions */}
+                {session.overall_feedback.improvement_suggestions &&
+                  session.overall_feedback.improvement_suggestions.length >
+                    0 && (
+                    <div className="mb-4">
+                      <h4
+                        className={`text-sm font-semibold ${textPrimary} mb-2 flex items-center gap-2`}
+                      >
+                        <span>💡</span> Areas for Improvement
+                      </h4>
+                      <ul
+                        className={`list-disc list-inside ${textSecondary} text-sm space-y-2`}
+                      >
+                        {session.overall_feedback.improvement_suggestions.map(
+                          (suggestion, idx) => (
+                            <li key={idx} className="leading-relaxed">
+                              {suggestion}
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  )}
+              </div>
+            )}
+
+            {/* Question-specific Feedback */}
+            {feedback.length > 0 && (
+              <>
+                <h3
+                  className={`text-lg font-semibold ${textPrimary} mt-6 mb-3`}
+                >
+                  Question-by-Question Feedback
+                </h3>
+                {feedback.map((fb) => (
+                  <FeedbackCard key={fb.id} feedback={fb} />
+                ))}
+              </>
+            )}
+
+            {/* No Feedback Message */}
+            {feedback.length === 0 && !session.overall_feedback && (
               <div className={`${bgCard} border rounded-xl p-12 text-center`}>
                 <span className="text-6xl block mb-4">📝</span>
                 <h3 className={`text-xl font-semibold ${textPrimary} mb-2`}>
@@ -282,8 +422,6 @@ export default function SessionDetailPage() {
                   answers
                 </p>
               </div>
-            ) : (
-              feedback.map((fb) => <FeedbackCard key={fb.id} feedback={fb} />)
             )}
           </div>
         )}

@@ -39,6 +39,16 @@ export interface QuestionFeedback {
   created_at: string;
 }
 
+export interface OverallFeedback {
+  type: string;
+  is_final: boolean;
+  strengths: string[];
+  content_quality: string;
+  confidence_score: number;
+  grammar_assessment: string;
+  improvement_suggestions: string[];
+}
+
 export interface SessionDetail {
   id: number;
   user_id: number;
@@ -54,7 +64,7 @@ export interface SessionDetail {
   started_at: string;
   completed_at: string | null;
   duration_minutes: number | null;
-  overall_feedback: Record<string, unknown> | null;
+  overall_feedback: OverallFeedback | null;
 }
 
 export interface SessionDetailResponse {

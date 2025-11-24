@@ -13,9 +13,9 @@ import { getBaseUrl } from "./utils";
 
 export async function authFetch(url: string, options: RequestInit = {}) {
   const token = await auth.currentUser?.getIdToken();
+  console.log("Auth token:", token);
   if (!token) {
-    alert("No auth token found. Please log in.");
-    throw new Error("No auth token found. User not logged in.");
+    throw new Error("No auth token found. Please log in.");
   }
   const headers: HeadersInit = {};
 
@@ -27,13 +27,48 @@ export async function authFetch(url: string, options: RequestInit = {}) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...headers,
-      ...(options.headers || {}),
-    },
-  });
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...headers,
+        ...(options.headers || {}),
+      },
+    });
+
+    // If response is not ok, try to extract error message from backend
+    if (!response.ok) {
+      let errorMessage = `Request failed with status ${response.status}`;
+
+      try {
+        const errorData = await response.json();
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        } else if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch {
+        // If JSON parsing fails, use status text
+        errorMessage = response.statusText || errorMessage;
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    return response;
+  } catch (error) {
+    // Handle network errors
+    if (error instanceof TypeError && error.message === "Failed to fetch") {
+      throw new Error(
+        "Unable to connect to the server. Please check your internet connection and try again."
+      );
+    }
+
+    // Re-throw other errors
+    throw error;
+  }
 }
 
 // ==================== Profile API ====================
@@ -108,6 +143,7 @@ export const resumeApi = {
   },
 
   async getResumeById(id: number): Promise<Resume> {
+    console.log("Fetching resume with ID:", id);
     const response = await authFetch(`${getBaseUrl()}/api/user/resumes/${id}`);
     if (!response.ok) throw new Error("Failed to fetch resume");
     return response.json();
