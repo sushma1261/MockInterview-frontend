@@ -4,6 +4,7 @@ import { useNotification } from "@/app/utils/NotificationContext";
 import { useTheme } from "@/app/utils/ThemeContext";
 import ConversationView from "@/components/history/ConversationView";
 import FeedbackCard from "@/components/history/FeedbackCard";
+import { useAuth } from "@/lib/AuthContext";
 import { historyApi, SessionDetailResponse } from "@/lib/historyApi";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -17,14 +18,15 @@ export default function SessionDetailPage() {
   const sessionId = params?.id as string;
 
   const [sessionData, setSessionData] = useState<SessionDetailResponse | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"conversation" | "feedback">(
-    "conversation"
+    "conversation",
   );
   const [isResuming, setIsResuming] = useState(false);
+  const { user, loading: authLoading } = useAuth();
 
   const bgMain = theme === "dark" ? "bg-gray-900" : "bg-gray-100";
   const bgCard =
@@ -35,11 +37,12 @@ export default function SessionDetailPage() {
   const textSecondary = theme === "dark" ? "text-gray-400" : "text-gray-600";
 
   useEffect(() => {
+    if (authLoading) return;
     if (sessionId) {
       loadSessionDetail();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]);
+  }, [sessionId, authLoading]);
 
   const loadSessionDetail = async () => {
     try {
@@ -60,7 +63,7 @@ export default function SessionDetailPage() {
       setIsResuming(true);
       const response = await historyApi.resumeSession(parseInt(sessionId));
       showSuccess(
-        `Session resumed! Restored ${response.messageCount} messages. Redirecting to chat...`
+        `Session resumed! Restored ${response.messageCount} messages. Redirecting to chat...`,
       );
 
       // Redirect to chat page with session ID
@@ -111,8 +114,8 @@ export default function SessionDetailPage() {
       isActive
         ? "bg-indigo-600 text-white"
         : theme === "dark"
-        ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
-        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
+          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
     }`;
   };
 
@@ -183,7 +186,7 @@ export default function SessionDetailPage() {
             <div className="flex flex-col items-end gap-2">
               <span
                 className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
-                  session.session_status
+                  session.session_status,
                 )}`}
               >
                 {session.session_status.replace("_", " ").toUpperCase()}
@@ -241,8 +244,8 @@ export default function SessionDetailPage() {
                 {feedback.length > 0
                   ? feedback.length
                   : session.overall_feedback
-                  ? "Overall"
-                  : "0"}
+                    ? "Overall"
+                    : "0"}
               </p>
             </div>
             <div>
@@ -270,8 +273,8 @@ export default function SessionDetailPage() {
             {feedback.length > 0
               ? `(${feedback.length})`
               : session.overall_feedback
-              ? "(Available)"
-              : "(0)"}
+                ? "(Available)"
+                : "(0)"}
           </button>
         </div>
 
@@ -311,8 +314,8 @@ export default function SessionDetailPage() {
                           session.overall_feedback.confidence_score >= 7
                             ? "bg-green-500"
                             : session.overall_feedback.confidence_score >= 5
-                            ? "bg-yellow-500"
-                            : "bg-red-500"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
                         }`}
                         style={{
                           width: `${
@@ -364,7 +367,7 @@ export default function SessionDetailPage() {
                         {session.overall_feedback.strengths.map(
                           (strength, idx) => (
                             <li key={idx}>{strength}</li>
-                          )
+                          ),
                         )}
                       </ul>
                     </div>
@@ -388,7 +391,7 @@ export default function SessionDetailPage() {
                             <li key={idx} className="leading-relaxed">
                               {suggestion}
                             </li>
-                          )
+                          ),
                         )}
                       </ul>
                     </div>

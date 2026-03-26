@@ -2,7 +2,6 @@
 
 import { auth } from "@/lib/firebase";
 import {
-  CreateResumeRequest,
   Resume,
   UpdatePreferencesRequest,
   UpdateResumeRequest,
@@ -13,7 +12,7 @@ import { getBaseUrl } from "./utils";
 
 export async function authFetch(url: string, options: RequestInit = {}) {
   const token = await auth.currentUser?.getIdToken();
-  console.log("Auth token:", token);
+  // console.log("Auth token:", token);
   if (!token) {
     throw new Error("No auth token found. Please log in.");
   }
@@ -62,7 +61,7 @@ export async function authFetch(url: string, options: RequestInit = {}) {
     // Handle network errors
     if (error instanceof TypeError && error.message === "Failed to fetch") {
       throw new Error(
-        "Unable to connect to the server. Please check your internet connection and try again."
+        "Unable to connect to the server. Please check your internet connection and try again.",
       );
     }
 
@@ -103,7 +102,7 @@ export const preferencesApi = {
   },
 
   async updatePreferences(
-    data: UpdatePreferencesRequest
+    data: UpdatePreferencesRequest,
   ): Promise<UserPreferences> {
     const response = await authFetch(`${getBaseUrl()}/api/user/preferences`, {
       method: "PUT",
@@ -117,18 +116,34 @@ export const preferencesApi = {
 // ==================== Resume API ====================
 
 export const resumeApi = {
-  async createResume(data: CreateResumeRequest): Promise<Resume> {
-    const response = await authFetch(`${getBaseUrl()}/api/user/resumes`, {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error("Failed to create resume");
+  async createResume(data: {
+    file: File;
+    title?: string;
+    is_primary?: boolean;
+    store_in_db?: boolean;
+  }): Promise<Resume> {
+    const formData = new FormData();
+    formData.append("resume", data.file);
+    if (data.title) formData.append("title", data.title);
+    if (data.is_primary !== undefined)
+      formData.append("is_primary", String(data.is_primary));
+    if (data.store_in_db !== undefined)
+      formData.append("store_in_db", String(data.store_in_db));
+
+    const response = await authFetch(
+      `${getBaseUrl()}/api/user/resumes/upload`,
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
+    if (!response.ok) throw new Error("Failed to upload resume");
     return response.json();
   },
 
   async getResumes(limit = 50, offset = 0): Promise<Resume[]> {
     const response = await authFetch(
-      `${getBaseUrl()}/api/user/resumes?limit=${limit}&offset=${offset}`
+      `${getBaseUrl()}/api/user/resumes?limit=${limit}&offset=${offset}`,
     );
     if (!response.ok) throw new Error("Failed to fetch resumes");
     return response.json();
@@ -136,7 +151,7 @@ export const resumeApi = {
 
   async getPrimaryResume(): Promise<Resume> {
     const response = await authFetch(
-      `${getBaseUrl()}/api/user/resumes/primary`
+      `${getBaseUrl()}/api/user/resumes/primary`,
     );
     if (!response.ok) throw new Error("Failed to fetch primary resume");
     return response.json();
@@ -170,7 +185,7 @@ export const resumeApi = {
       `${getBaseUrl()}/api/user/resumes/${id}/set-primary`,
       {
         method: "PUT",
-      }
+      },
     );
     if (!response.ok) throw new Error("Failed to set primary resume");
     return response.json();

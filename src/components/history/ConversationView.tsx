@@ -66,7 +66,7 @@ export default function ConversationView({ messages }: ConversationViewProps) {
             <div
               key={message.id}
               className={`border ${getMessageStyle(
-                message.role
+                message.role,
               )} rounded-lg p-4`}
             >
               <div className="flex items-start gap-3">
@@ -80,8 +80,8 @@ export default function ConversationView({ messages }: ConversationViewProps) {
                         {message.role === "user"
                           ? "You"
                           : message.role === "assistant"
-                          ? "AI Interviewer"
-                          : "System"}
+                            ? "AI Interviewer"
+                            : "System"}
                       </span>
                       {message.question_number && (
                         <span
@@ -110,6 +110,136 @@ export default function ConversationView({ messages }: ConversationViewProps) {
                       {formatTime(message.created_at)}
                     </span>
                   </div>
+
+                  {/* Display the question if available */}
+                  {message.function_result?.question && (
+                    <div
+                      className={`mb-3 p-3 rounded-lg ${
+                        theme === "dark"
+                          ? "bg-indigo-900/30 border border-indigo-800"
+                          : "bg-indigo-50 border border-indigo-200"
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <span className="text-lg">❓</span>
+                        <div className="flex-1">
+                          <p
+                            className={`font-medium ${textPrimary} text-sm mb-1`}
+                          >
+                            Question:
+                          </p>
+                          <p className={`${textPrimary} text-sm`}>
+                            {message.function_result.question}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Display reasoning */}
+                  {message.function_result?.reasoning && (
+                    <div
+                      className={`mb-3 p-3 rounded-lg ${
+                        theme === "dark" ? "bg-gray-700/50" : "bg-gray-100"
+                      }`}
+                    >
+                      <p
+                        className={`text-xs font-semibold ${textSecondary} mb-1`}
+                      >
+                        💭 Reasoning:
+                      </p>
+                      <p className={`${textPrimary} text-sm`}>
+                        {message.function_result.reasoning}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Display previous answer feedback if available */}
+                  {message.function_result?.previous_answer_feedback && (
+                    <div
+                      className={`mb-3 p-3 rounded-lg ${
+                        theme === "dark"
+                          ? "bg-amber-900/20 border border-amber-800"
+                          : "bg-amber-50 border border-amber-200"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">📝</span>
+                        <p className={`font-semibold ${textPrimary} text-sm`}>
+                          Feedback on Previous Answer
+                        </p>
+                        <span
+                          className={`ml-auto px-2 py-0.5 rounded text-xs font-bold ${
+                            theme === "dark"
+                              ? "bg-indigo-900/50 text-indigo-300"
+                              : "bg-indigo-100 text-indigo-700"
+                          }`}
+                        >
+                          Score:{" "}
+                          {
+                            message.function_result.previous_answer_feedback
+                              .score
+                          }
+                          /10
+                        </span>
+                      </div>
+
+                      <p className={`${textPrimary} text-sm mb-2`}>
+                        {
+                          message.function_result.previous_answer_feedback
+                            .feedback_text
+                        }
+                      </p>
+
+                      {message.function_result.previous_answer_feedback
+                        .strengths?.length > 0 && (
+                        <div className="mb-2">
+                          <p
+                            className={`text-xs font-semibold ${textSecondary} mb-1`}
+                          >
+                            ✅ Strengths:
+                          </p>
+                          <ul className="list-disc list-inside">
+                            {message.function_result.previous_answer_feedback.strengths.map(
+                              (strength, idx) => (
+                                <li
+                                  key={idx}
+                                  className={`${textPrimary} text-sm`}
+                                >
+                                  {strength}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
+
+                      {message.function_result.previous_answer_feedback
+                        .areas_for_improvement?.length > 0 && (
+                        <div>
+                          <p
+                            className={`text-xs font-semibold ${textSecondary} mb-1`}
+                          >
+                            📈 Areas for Improvement:
+                          </p>
+                          <ul className="list-disc list-inside">
+                            {message.function_result.previous_answer_feedback.areas_for_improvement.map(
+                              (area, idx) => (
+                                <li
+                                  key={idx}
+                                  className={`${textPrimary} text-sm`}
+                                >
+                                  {area}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Display general content */}
                   <p className={`${textPrimary} text-sm whitespace-pre-wrap`}>
                     {message.content}
                   </p>

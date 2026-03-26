@@ -47,7 +47,7 @@ export function useStreamingChat(options?: UseStreamingChatOptions) {
       const wordDelayMs = options?.wordDelayMs ?? 30;
 
       try {
-        const res = await fetch(`${getBaseUrl()}/voice/stream`, {
+        const res = await fetch(`${getBaseUrl()}/api/chat/stream`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

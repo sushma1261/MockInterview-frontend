@@ -23,6 +23,20 @@ export interface SessionMessage {
   message_type: string;
   question_number: number | null;
   question_type: string | null;
+  function_name: string | null;
+  function_result: {
+    type?: string;
+    question?: string;
+    reasoning?: string;
+    question_type?: string;
+    question_number?: number;
+    previous_answer_feedback?: {
+      score: number;
+      strengths: string[];
+      feedback_text: string;
+      areas_for_improvement: string[];
+    };
+  } | null;
   created_at: string;
 }
 
@@ -129,7 +143,7 @@ export const historyApi = {
    */
   async getSessionDetail(sessionId: number): Promise<SessionDetailResponse> {
     const response = await authFetch(
-      `${getBaseUrl()}/api/history/${sessionId}`
+      `${getBaseUrl()}/api/history/${sessionId}`,
     );
 
     if (!response.ok) {
@@ -144,7 +158,7 @@ export const historyApi = {
    */
   async getConversation(
     sessionId: number,
-    limit?: number
+    limit?: number,
   ): Promise<{ success: boolean; sessionId: number; conversation: string }> {
     const url = `${getBaseUrl()}/api/history/${sessionId}/conversation${
       limit ? `?limit=${limit}` : ""
@@ -163,7 +177,7 @@ export const historyApi = {
    */
   async getStats(): Promise<{ success: boolean; stats: UserStats }> {
     const response = await authFetch(
-      `${getBaseUrl()}/api/history/stats/summary`
+      `${getBaseUrl()}/api/history/stats/summary`,
     );
 
     if (!response.ok) {
@@ -182,7 +196,7 @@ export const historyApi = {
     jobDescriptions: JobDescription[];
   }> {
     const response = await authFetch(
-      `${getBaseUrl()}/api/history/job-descriptions/all`
+      `${getBaseUrl()}/api/history/job-descriptions/all`,
     );
 
     if (!response.ok) {
@@ -208,7 +222,7 @@ export const historyApi = {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -242,13 +256,13 @@ export const historyApi = {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(
-        errorData.details || errorData.error || "Failed to resume session"
+        errorData.details || errorData.error || "Failed to resume session",
       );
     }
 
