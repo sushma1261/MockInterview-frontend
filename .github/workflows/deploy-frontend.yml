@@ -30,12 +30,17 @@ jobs:
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
           NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
 
+      - name: Decode SSH key
+        run: |
+          echo "${{ secrets.VM_SSH_KEY }}" | base64 -d > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+
       - name: Copy build to VM
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VM_HOST }}
           username: ubuntu
-          key: ${{ secrets.VM_SSH_KEY }}
+          key_path: /tmp/deploy_key
           source: ".next/standalone/,.next/static/,public/"
           target: "/home/ubuntu/frontend"
           strip_components: 0
@@ -45,8 +50,11 @@ jobs:
         with:
           host: ${{ secrets.VM_HOST }}
           username: ubuntu
-          key: ${{ secrets.VM_SSH_KEY }}
+          key_path: /tmp/deploy_key
           script: |
+            export NVM_DIR="$HOME/.nvm"
+            source "$NVM_DIR/nvm.sh"
             cp -r /home/ubuntu/frontend/.next/static /home/ubuntu/frontend/.next/standalone/.next/static
             cp -r /home/ubuntu/frontend/public /home/ubuntu/frontend/.next/standalone/public
             pm2 reload frontend || pm2 start node --name "frontend" -- /home/ubuntu/frontend/.next/standalone/server.js
+            pm2 save
