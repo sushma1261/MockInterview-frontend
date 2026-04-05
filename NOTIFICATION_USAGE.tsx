@@ -11,24 +11,18 @@
  * File: src/app/layout.tsx
  */
 
+/*
 import { NotificationProvider } from "@/app/utils/NotificationContext";
 import NotificationStrip from "@/components/NotificationStrip";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
         <ThemeProvider>
           <AuthProvider>
-            {/* Add NotificationProvider wrapper */}
             <NotificationProvider>
               <Sidebar />
-
-              {/* Add NotificationStrip below navbar/sidebar */}
               <div className="flex-1 flex flex-col">
                 <NotificationStrip />
                 <main className="flex-1">{children}</main>
@@ -40,23 +34,25 @@ export default function RootLayout({
     </html>
   );
 }
+*/
 
 /**
  * STEP 2: Use notifications anywhere in your app
  * ----------------------------------------------
  */
 
+/*
 // Example 1: Basic usage in any component
 import { useNotification } from "@/app/utils/NotificationContext";
 
-export default function MyComponent() {
-  const { showSuccess, showError, showWarning, showInfo } = useNotification();
+function MyComponent() {
+  const { showSuccess, showError } = useNotification();
 
   const handleSave = async () => {
     try {
       await saveData();
       showSuccess("Data saved successfully!");
-    } catch (error) {
+    } catch {
       showError("Failed to save data. Please try again.");
     }
   };
@@ -65,7 +61,7 @@ export default function MyComponent() {
 }
 
 // Example 2: With action button
-export default function UploadComponent() {
+function UploadComponent() {
   const { showNotification } = useNotification();
 
   const handleUploadError = () => {
@@ -78,7 +74,7 @@ export default function UploadComponent() {
           // Handle retry logic
         },
       },
-      autoClose: 0, // Don't auto-close
+      autoClose: 0,
     });
   };
 
@@ -86,15 +82,16 @@ export default function UploadComponent() {
 }
 
 // Example 3: Custom duration
-export default function FormComponent() {
+function FormComponent() {
   const { showWarning } = useNotification();
 
   const handleValidation = () => {
-    showWarning("Please fill in all required fields", 3000); // 3 seconds
+    showWarning("Please fill in all required fields", 3000);
   };
 
   return <button onClick={handleValidation}>Submit</button>;
 }
+*/
 
 /**
  * AVAILABLE METHODS
