@@ -2,7 +2,7 @@ name: Deploy Frontend to VM
 
 on:
   push:
-    branches: [main]
+    branches: [docker-deployment]
 
 jobs:
   deploy:
