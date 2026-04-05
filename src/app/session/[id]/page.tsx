@@ -2,11 +2,11 @@
 
 import { getBaseUrl } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 const baseUrl = `${getBaseUrl()}/interview`;
 
-export default function SessionPage({ params }: { params: { id: string } }) {
+function SessionPageInner({ params }: { params: { id: string } }) {
   const searchParams = useSearchParams();
   const firstQuestion = searchParams.get("question") || "";
 
@@ -92,5 +92,13 @@ export default function SessionPage({ params }: { params: { id: string } }) {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SessionPage({ params }: { params: { id: string } }) {
+  return (
+    <Suspense fallback={null}>
+      <SessionPageInner params={params} />
+    </Suspense>
   );
 }
